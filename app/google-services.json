@@ -1,0 +1,107 @@
+{
+  "project_info": {
+    "project_number": "1013150255362",
+    "firebase_url": "https://streetmusic-a3c02.firebaseio.com",
+    "project_id": "streetmusic-a3c02",
+    "storage_bucket": "streetmusic-a3c02.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1013150255362:android:12b615b699bd45db",
+        "android_client_info": {
+          "package_name": "com.example.alex.streetmusic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1013150255362-qv8c13841kiuv083vd92dgi76c58i93j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alex.streetmusic",
+            "certificate_hash": "81d748f6adadba71ba7fa55709fc7dc006419080"
+          }
+        },
+        {
+          "client_id": "1013150255362-gfv9kntte0431v8r9g2qud49kcc78g9t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alex.streetmusic",
+            "certificate_hash": "c13f3595b3b274d22a1c1ddeae789ef11aaba976"
+          }
+        },
+        {
+          "client_id": "1013150255362-h2njfairfd1jo61eks0hf4ldtqveibsu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9B4K5HFeF39ezP9jDlZfKm-ee6ePYnUo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1013150255362-h2njfairfd1jo61eks0hf4ldtqveibsu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1013150255362:android:bbd99d9db53d3ae6",
+        "android_client_info": {
+          "package_name": "com.example.vytuatus.streetlive"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1013150255362-rs5q8togfnm2rub6mtke5qhfhhnqp5h3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vytuatus.streetlive",
+            "certificate_hash": "81d748f6adadba71ba7fa55709fc7dc006419080"
+          }
+        },
+        {
+          "client_id": "1013150255362-h2njfairfd1jo61eks0hf4ldtqveibsu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9B4K5HFeF39ezP9jDlZfKm-ee6ePYnUo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1013150255362-h2njfairfd1jo61eks0hf4ldtqveibsu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

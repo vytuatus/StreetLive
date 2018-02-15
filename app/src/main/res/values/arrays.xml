@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="genres">
+        <item>Rock</item>
+        <item>Jazz</item>
+        <item>Soul</item>
+        <item>World</item>
+        <item>Blues</item>
+        <item>Alternative</item>
+        <item>Metal</item>
+        <item>Coffee-House</item>
+        <item>Reggie</item>
+    </string-array>
+</resources>
