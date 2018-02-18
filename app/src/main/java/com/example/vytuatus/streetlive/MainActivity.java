@@ -254,52 +254,11 @@ public class MainActivity extends AppCompatActivity
                 return true;
                 // Create an example event
             case R.id.create_event:
-                DatabaseReference eventDatabaseReference = mFirebaseDatabaseReference.push();
-                final String eventReferenceId = eventDatabaseReference.getKey();
-
-                DatabaseReference eventReference = FirebaseDatabase.getInstance().
-                        getReference(EVENTS_CHILD).child(eventReferenceId);
-                DatabaseReference userEventReference = FirebaseDatabase.getInstance().
-                        getReference(USERS_CHILD).
-                        child(mFirebaseUser.getUid()).
-                        child(BAND_LIST).
-                        child("Loxai").
-                        child(EVENTS_IN_BAND).
-                        child(eventReferenceId);
-
-                //make a hashmap to store the time when the event was added
-                HashMap<String, Object> timestampCreated = new HashMap<>();
-                timestampCreated.put(FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
-
-                StreetEvent streetEvent = new StreetEvent(
-                        "Loxai",
-                        "rock",
-                        "Mes esam Loxai",
-                        "https://i.ebayimg.com/images/g/nlMAAOSwAYtWPfzf/s-l300.jpg",
-                        11.11,
-                        12.12,
-                        timestampCreated);
-                eventReference.setValue(streetEvent);
-                userEventReference.setValue(streetEvent);
-
-                return true;
+                return false;
 
             case R.id.create_band:
+                return false;
 
-                //make a hashmap to store the time when the event was added
-                timestampCreated = new HashMap<>();
-                timestampCreated.put(FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
-                Band band = new Band(
-                        "Loxai",
-                        "rock",
-                        "Mes esam Loxai",
-                        "https://i.ebayimg.com/images/g/nlMAAOSwAYtWPfzf/s-l300.jpg",
-                        timestampCreated);
-                mFirebaseDatabaseReference.child(USERS_CHILD)
-                        .child(mFirebaseUser.getUid())
-                        .child(BAND_LIST)
-                        .child("Loxai")
-                        .setValue(band);
             default:
                 return super.onOptionsItemSelected(item);
         }

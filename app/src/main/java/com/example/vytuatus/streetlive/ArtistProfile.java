@@ -1,9 +1,7 @@
 package com.example.vytuatus.streetlive;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,16 +9,13 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.vytuatus.streetlive.Utils.Utility;
-import com.google.firebase.database.DatabaseReference;
 
 public class ArtistProfile extends AppCompatActivity implements
-        OneArtistProfile.OnFragmentInteractionListener {
+        ArtistProfileFragment.OnFragmentInteractionListener {
 
     public static final String ARTIST_PROFILE_INTENT = "StartArtistProfileIntent";
     public static final int SHOW_NO_BAND_INFO_MESSAGE = 0;
@@ -54,8 +49,8 @@ public class ArtistProfile extends AppCompatActivity implements
 
         mNoBandInfoMessage = findViewById(R.id.no_bands_info_textView);
         mNoBandCreateLink = findViewById(R.id.create_new_band_link);
-        ViewPager mViewPager = findViewById(R.id.pager);
-        TabLayout mTabLayout = findViewById(R.id.tablayout);
+        mViewPager = findViewById(R.id.pager);
+        mTabLayout = findViewById(R.id.tablayout);
         mNoBandCreateLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,7 +66,9 @@ public class ArtistProfile extends AppCompatActivity implements
             case SHOW_SINGLE_ARTIST_FRAGMENT:
                 mNoBandInfoMessage.setVisibility(View.GONE);
                 mNoBandCreateLink.setVisibility(View.GONE);
-                OneArtistProfile oneArtistFragment = new OneArtistProfile();
+                mViewPager.setVisibility(View.GONE);
+                mTabLayout.setVisibility(View.GONE);
+                ArtistProfileFragment oneArtistFragment = ArtistProfileFragment.newInstance(mBandNames[0]);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.fragment_container, oneArtistFragment).commit();
                 break;
@@ -111,10 +108,10 @@ public class ArtistProfile extends AppCompatActivity implements
              */
             switch (position) {
                 case 0:
-                    OneArtistProfile fragment1 = OneArtistProfile.newInstance(mBandNames[0]);
+                    ArtistProfileFragment fragment1 = ArtistProfileFragment.newInstance(mBandNames[0]);
                     return fragment1;
                 case 1:
-                    OneArtistProfile fragment2 = OneArtistProfile.newInstance(mBandNames[1]);
+                    ArtistProfileFragment fragment2 = ArtistProfileFragment.newInstance(mBandNames[1]);
                     return fragment2;
                 default:
                     return null;

@@ -16,6 +16,8 @@ public class StreetEvent {
     private double lat;
     private double lng;
     private HashMap<String, Object> timestampCreated;
+    private long startTime;
+    private long endTime;
 
     public StreetEvent() {
     }

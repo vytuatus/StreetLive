@@ -1,12 +1,8 @@
 package com.example.vytuatus.streetlive;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.bumptech.glide.util.Util;
-import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.StreetEvent;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +26,7 @@ public class CreateStreetEvent extends AppCompatActivity {
     public static final String EVENTS_CHILD = "events";
     public static final String EVENTS_IN_BAND = "eventsInBand";
     private String mBandName;
+    private String mBandNamePhotoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +39,8 @@ public class CreateStreetEvent extends AppCompatActivity {
 
         // Get shared preferences and get the bandNames from there that were already pre-fetched by
         // Utility
-        mBandName = getIntent().getStringExtra(OneArtistProfile.LAUNCH_CREATE_EVENT_INTENT_KEY);
+        mBandName = getIntent().getStringExtra(ArtistProfileFragment.PASS_BAND_NAME_INTENT_KEY);
+        mBandNamePhotoUrl = getIntent().getStringExtra(ArtistProfileFragment.PASS_BAND_PHOTO_URL_INTENT_KEY);
 
         DatabaseReference eventDatabaseReference = mFirebaseDatabaseReference.push();
         final String eventReferenceId = eventDatabaseReference.getKey();
@@ -65,7 +63,7 @@ public class CreateStreetEvent extends AppCompatActivity {
                 mBandName,
                 "Rock",
                 "Mes esam Loxai",
-                "https://i.ebayimg.com/images/g/nlMAAOSwAYtWPfzf/s-l300.jpg",
+                mBandNamePhotoUrl,
                 11.11,
                 12.12,
                 timestampCreated);

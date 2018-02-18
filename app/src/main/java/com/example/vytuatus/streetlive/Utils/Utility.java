@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.bumptech.glide.util.Util;
 import com.example.vytuatus.streetlive.ArtistProfile;
 import com.example.vytuatus.streetlive.CreateBand;
+import com.example.vytuatus.streetlive.MainActivity;
 import com.example.vytuatus.streetlive.R;
 import com.example.vytuatus.streetlive.model.Band;
 import com.google.firebase.auth.FirebaseUser;
@@ -56,6 +57,11 @@ public class Utility {
                         sb.append(postSnapshot.getKey()).append(",");
                     }
                     editor.putString(context.getString(R.string.band_names_pref_key), sb.toString());
+
+                    if (context instanceof CreateBand){
+                        Intent intent = new Intent(context, ArtistProfile.class);
+                        context.startActivity(intent);
+                    }
 
                 } else {
 

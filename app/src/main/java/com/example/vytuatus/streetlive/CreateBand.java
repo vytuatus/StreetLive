@@ -70,7 +70,7 @@ public class CreateBand extends AppCompatActivity {
         // configures the autoComplete for genre and saves the selected genre in a member variable
         String[] genresArray = getResources().getStringArray(R.array.genres);
 
-        ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line, genresArray);
 
@@ -219,6 +219,7 @@ public class CreateBand extends AppCompatActivity {
                                                                 mFirebaseUser,
                                                                 mFirebaseDatabaseReference,
                                                                 CreateBand.this);
+                                                        finish();
 
                                                     } else {
                                                         Log.w(TAG, "Image upload task was not successful.",

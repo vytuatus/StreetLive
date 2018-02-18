@@ -2,7 +2,6 @@ package com.example.vytuatus.streetlive;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,13 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.util.Util;
-import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.Band;
 import com.example.vytuatus.streetlive.model.StreetEvent;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -34,12 +30,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-import java.util.HashMap;
 
 import static com.example.vytuatus.streetlive.MainActivity.BAND_LIST;
 import static com.example.vytuatus.streetlive.MainActivity.USERS_CHILD;
@@ -48,18 +41,19 @@ import static com.example.vytuatus.streetlive.MainActivity.USERS_CHILD;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link OneArtistProfile.OnFragmentInteractionListener} interface
+ * {@link ArtistProfileFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link OneArtistProfile#newInstance} factory method to
+ * Use the {@link ArtistProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class OneArtistProfile extends Fragment {
+public class ArtistProfileFragment extends Fragment {
 
-    private static final String TAG = OneArtistProfile.class.getSimpleName();
+    private static final String TAG = ArtistProfileFragment.class.getSimpleName();
 
     public static final String EVENTS_IN_BAND = "eventsInBand";
     private String mBandName;
-    public static final String LAUNCH_CREATE_EVENT_INTENT_KEY = "launchCreateEventIntentKey";
+    public static final String PASS_BAND_NAME_INTENT_KEY = "passBandNameIntentKey";
+    public static final String PASS_BAND_PHOTO_URL_INTENT_KEY = "passBandPhotoUrlIntentKey";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -86,8 +80,9 @@ public class OneArtistProfile extends Fragment {
     private TextView mGenreTextView;
     private TextView mBandDescriptionTextView;
     private ImageView mImageView;
+    private String mBandPhotoUrl;
 
-    public OneArtistProfile() {
+    public ArtistProfileFragment() {
         // Required empty public constructor
     }
 
@@ -95,13 +90,12 @@ public class OneArtistProfile extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment OneArtistProfile.
+     * @param bandName band name
+     * @return A new instance of fragment ArtistProfileFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static OneArtistProfile newInstance(String bandName) {
-        OneArtistProfile fragment = new OneArtistProfile();
+    public static ArtistProfileFragment newInstance(String bandName) {
+        ArtistProfileFragment fragment = new ArtistProfileFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, bandName);
         fragment.setArguments(args);
@@ -146,7 +140,8 @@ public class OneArtistProfile extends Fragment {
             public void onClick(View view) {
                 // Launch CreateStreetEvent Activity
                 Intent intent = new Intent(getActivity(), CreateStreetEvent.class);
-                intent.putExtra(LAUNCH_CREATE_EVENT_INTENT_KEY, mBandName);
+                intent.putExtra(PASS_BAND_NAME_INTENT_KEY, mBandName);
+                intent.putExtra(PASS_BAND_PHOTO_URL_INTENT_KEY, mBandPhotoUrl);
                 startActivity(intent);
 
             }
@@ -186,21 +181,21 @@ public class OneArtistProfile extends Fragment {
                 mGenreTextView.setText(band.getGenre  ());
                 mBandDescriptionTextView.setText(band.getDescription());
 
-                final String imageUrl = band.getPhotoUrl();
+                mBandPhotoUrl = band.getPhotoUrl();
 
                 // If url starts with "gs" it means there is an image stored in Firebase for this user
-                if (imageUrl != null){
+                if (mBandPhotoUrl != null){
                     // If Firebase holds the image, then
                     StorageReference storageReference = FirebaseStorage.getInstance()
-                            .getReferenceFromUrl(imageUrl);
+                            .getReferenceFromUrl(mBandPhotoUrl);
                     storageReference.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                         @Override
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()){
                                 //String downloadUrl = task.getResult().getScheme();
-                                Log.d(TAG, imageUrl);
+                                Log.d(TAG, mBandPhotoUrl);
                                 Glide.with(getActivity())
-                                        .load(imageUrl)
+                                        .load(mBandPhotoUrl)
                                         .into(mImageView);
                             } else {
                                 Log.w(TAG, "Getting download url was not successful.",
