@@ -87,4 +87,27 @@ public class Utility {
 
         return bandNames;
     }
+
+    public static void saveSelectedLatLngToSharedPrefs(Context context, double[] latLng){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putLong(context.getString(R.string.latitude_pref_key), Double.doubleToLongBits(latLng[0]));
+        editor.putLong(context.getString(R.string.longitude_pref_key), Double.doubleToLongBits(latLng[1]));
+        editor.commit();
+
+    }
+
+    public static double[] getSelectedLatLngFromSharedPrefs(Context context){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        double latitude = Double.longBitsToDouble(
+                sp.getLong(context.getString(R.string.latitude_pref_key),
+                        Double.doubleToLongBits(11.1111)));
+        double longitude = Double.longBitsToDouble(
+                sp.getLong(context.getString(R.string.longitude_pref_key),
+                        Double.doubleToLongBits(11.1111)));
+
+        return new double[]{latitude, longitude};
+
+    }
+
 }

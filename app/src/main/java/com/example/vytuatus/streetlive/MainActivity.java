@@ -152,7 +152,29 @@ public class MainActivity extends AppCompatActivity
                         .setQuery(messagesRef, parser)
                         .build();
 
-        mFirebaseAdapter = new CustomFirebaseAdapter(options,MainActivity.this);
+        // Instantiate a new Firebase Adapter and also handle the click events on different
+        // Recycler view objects
+        mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
+                new CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler() {
+            @Override
+            public void onEventLocationClick(int position) {
+                mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
+                        double lat = streetEvent.getLat();
+                        double lng = streetEvent.getLng();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
+
 
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override

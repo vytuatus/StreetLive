@@ -52,8 +52,14 @@ public class ArtistProfileFragment extends Fragment {
 
     public static final String EVENTS_IN_BAND = "eventsInBand";
     private String mBandName;
+    private String mBandPhotoUrl;
+    private String mBandGenre;
+    private String mBandDescription;
+
     public static final String PASS_BAND_NAME_INTENT_KEY = "passBandNameIntentKey";
     public static final String PASS_BAND_PHOTO_URL_INTENT_KEY = "passBandPhotoUrlIntentKey";
+    public static final String PASS_BAND_GENRE_INTENT_KEY = "passBandGenreIntentKey";
+    public static final String PASS_BAND_DESCRIPTION_INTENT_KEY = "passBandDescriptionIntentKey";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -80,7 +86,7 @@ public class ArtistProfileFragment extends Fragment {
     private TextView mGenreTextView;
     private TextView mBandDescriptionTextView;
     private ImageView mImageView;
-    private String mBandPhotoUrl;
+
 
     public ArtistProfileFragment() {
         // Required empty public constructor
@@ -142,6 +148,8 @@ public class ArtistProfileFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), CreateStreetEvent.class);
                 intent.putExtra(PASS_BAND_NAME_INTENT_KEY, mBandName);
                 intent.putExtra(PASS_BAND_PHOTO_URL_INTENT_KEY, mBandPhotoUrl);
+                intent.putExtra(PASS_BAND_GENRE_INTENT_KEY, mBandGenre);
+                intent.putExtra(PASS_BAND_DESCRIPTION_INTENT_KEY, mBandDescription);
                 startActivity(intent);
 
             }
@@ -178,9 +186,10 @@ public class ArtistProfileFragment extends Fragment {
 //                mBandName = band.getBandName();
                 mBandNameTextView.setText(mBandName);
                 Toast.makeText(getActivity(), band.getGenre(), Toast.LENGTH_SHORT).show();
-                mGenreTextView.setText(band.getGenre  ());
-                mBandDescriptionTextView.setText(band.getDescription());
-
+                mBandGenre = band.getGenre();
+                mGenreTextView.setText(mBandGenre);
+                mBandDescription = band.getDescription();
+                mBandDescriptionTextView.setText(mBandDescription);
                 mBandPhotoUrl = band.getPhotoUrl();
 
                 // If url starts with "gs" it means there is an image stored in Firebase for this user

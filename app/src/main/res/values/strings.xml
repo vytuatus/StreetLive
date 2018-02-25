@@ -20,6 +20,9 @@
     <string name="which_fragment_to_load_key">whichArtistFragment</string>
     <string name="update_number_of_bands_process_complete">updateNumberOfBandsComplete</string>
     <string name="band_names_pref_key">band_names</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="latitude_pref_key">latitude_pref_key</string>
+    <string name="longitude_pref_key">longitude_pref_key</string>
 
 
 </resources>

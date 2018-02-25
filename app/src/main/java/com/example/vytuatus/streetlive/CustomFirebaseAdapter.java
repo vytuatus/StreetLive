@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.vytuatus.streetlive.model.StreetEvent;
@@ -30,10 +31,16 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
 
     private Context mContext;
     private final String TAG = CustomFirebaseAdapter.class.getSimpleName();
+    private final CustomFirebaseAdapterOnClickHandler mEventLocationClickHandler;
+    public static interface CustomFirebaseAdapterOnClickHandler{
+        void onEventLocationClick(int position);
+    }
 
-    public CustomFirebaseAdapter(FirebaseRecyclerOptions<StreetEvent> options, Context context) {
+    public CustomFirebaseAdapter(FirebaseRecyclerOptions<StreetEvent> options, Context context,
+                                 CustomFirebaseAdapterOnClickHandler clickHandler) {
         super(options);
         mContext = context;
+        mEventLocationClickHandler = clickHandler;
     }
 
     @Override
@@ -88,7 +95,8 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
         }
     }
 
-    public static class StreetViewHolder extends RecyclerView.ViewHolder {
+    public class StreetViewHolder extends RecyclerView.ViewHolder implements
+            View.OnClickListener {
         TextView bandNameTextView;
         TextView genreTextView;
         ImageView bandImageView;
@@ -100,6 +108,13 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
             genreTextView = itemView.findViewById(R.id.genre_textView);
             bandImageView = itemView.findViewById(R.id.band_imageView);
             mapImageView = itemView.findViewById(R.id.map_imageView);
+            mapImageView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            Toast.makeText(view.getContext(), "Map Clicked", Toast.LENGTH_SHORT).show();
+            mEventLocationClickHandler.onEventLocationClick(getAdapterPosition());
         }
     }
 }
