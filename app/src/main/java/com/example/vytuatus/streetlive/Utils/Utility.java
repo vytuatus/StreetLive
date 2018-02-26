@@ -101,10 +101,10 @@ public class Utility {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         double latitude = Double.longBitsToDouble(
                 sp.getLong(context.getString(R.string.latitude_pref_key),
-                        Double.doubleToLongBits(11.1111)));
+                        Double.doubleToLongBits(0)));
         double longitude = Double.longBitsToDouble(
                 sp.getLong(context.getString(R.string.longitude_pref_key),
-                        Double.doubleToLongBits(11.1111)));
+                        Double.doubleToLongBits(0)));
 
         return new double[]{latitude, longitude};
 

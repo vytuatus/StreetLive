@@ -183,8 +183,7 @@ public class CreateStreetEvent extends AppCompatActivity {
                     Log.d("latitude is", String.valueOf(mLatLongFromMapAct[0]));
                     Log.d("longitude is", String.valueOf(mLatLongFromMapAct[1]));
                     Utility.saveSelectedLatLngToSharedPrefs(this, mLatLongFromMapAct);
-                    mLatLngTextview.setText(String.valueOf(mLatLongFromMapAct[0]) + " " +
-                            String.valueOf(mLatLongFromMapAct[1]));
+                    mLatLngTextview.setText(mLatLongFromMapAct[0] + " " + mLatLongFromMapAct[1]);
                 }
                 break;
 
@@ -194,5 +193,11 @@ public class CreateStreetEvent extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Utility.saveSelectedLatLngToSharedPrefs(this, new double[]{0, 0});
     }
 }

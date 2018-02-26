@@ -20,6 +20,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,7 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public static final String INTENT_KEY_RESULT_ADRESS = "resultAdress";
     public static final String INTENT_KEY_LAT_LONG = "latLong";
-    public static final String INTENT_KEY_PREVIOUS_LOCATION = "previousLocation";
+    public static final String TAG = MapsActivity.class.getSimpleName();
 
     private GoogleMap mMap;
     Geocoder mGeocoder;
@@ -63,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -72,7 +74,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mGeocoder = new Geocoder(this, Locale.getDefault());
 
         mEventsDatabaseReference = FirebaseDatabase.getInstance().getReference(EVENTS_CHILD);
+
+        // Get the previous location from shared preferences
         mLatLongFromPreviousPick = Utility.getSelectedLatLngFromSharedPrefs(this);
+        Log.d(TAG, "" + mLatLongFromPreviousPick[0]);
 
         mapFragment.getMapAsync(this);
     }
@@ -92,12 +97,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        if  (mLatLongFromPreviousPick != null) {
+        if  (mLatLongFromPreviousPick != null && mLatLongFromPreviousPick[0] != 0.0 &&
+                mLatLongFromPreviousPick[1] != 0.0) {
             LatLng previousPickedLocation = new LatLng(mLatLongFromPreviousPick[0],
                     mLatLongFromPreviousPick[1]);
 
             mPreviouslySelectedMarker = mMap.addMarker(new MarkerOptions().position(previousPickedLocation).title("Marker Bitch"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(previousPickedLocation));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+            mMap.setLatLngBoundsForCameraTarget(new LatLngBounds(
+                    new LatLng(53.94322574436461, 21.04769211262464), // southeast
+                    new LatLng(56.07548457909273, 26.81183036416769))); // northwest
         }
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -107,6 +117,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 latitude = point.latitude;
                 longitude = point.longitude;
 
+
                 List<Address> addresses = new ArrayList<>();
                 try {
                     addresses = mGeocoder.getFromLocation(point.latitude, point.longitude, 1);
@@ -114,16 +125,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     e.printStackTrace();
                 }
 
-                android.location.Address address = addresses.get(0);
-
-                if (address != null) {
-                    mAdressStringBuilder = new StringBuilder();
-                    for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
-                        mAdressStringBuilder.append(address.getAddressLine(i) + "\n");
+                // If you click a see location, there will be no adress
+                if (addresses.size() > 0){
+                    android.location.Address address = addresses.get(0);
+                    if (address != null) {
+                        mAdressStringBuilder = new StringBuilder();
+                        Log.d(TAG, "" + address);
+                        for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                            mAdressStringBuilder.append(address.getAddressLine(i) + "\n");
+                        }
+                        Toast.makeText(MapsActivity.this, mAdressStringBuilder.toString(),
+                                Toast.LENGTH_LONG).show();
                     }
-                    Toast.makeText(MapsActivity.this, mAdressStringBuilder.toString(),
-                            Toast.LENGTH_LONG).show();
                 }
+
+
+
 
                 //remove previously placed Marker
                 if (mMarker != null) {
@@ -131,8 +148,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
                 // remove the old latLng marker
-                if  (mLatLongFromPreviousPick != null) {
+                if  (mPreviouslySelectedMarker != null) {
                     mPreviouslySelectedMarker.remove();
+
                 }
 
                 //place marker where user just clicked
@@ -165,6 +183,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void onLocationPicked (View v){
+
+        // Return the selected latitudes and longitutes back to the CreateStreetEvent Activity
         double[] latLong = new double[]{latitude, longitude};
         Intent returnIntent = new Intent();
         returnIntent.putExtra(INTENT_KEY_LAT_LONG, latLong);
