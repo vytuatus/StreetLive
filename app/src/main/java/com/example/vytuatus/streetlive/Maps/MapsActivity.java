@@ -2,6 +2,7 @@ package com.example.vytuatus.streetlive.Maps;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v4.app.FragmentActivity;
@@ -19,6 +20,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -30,8 +33,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.android.SphericalUtil;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +64,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker mMarker;
     private double[] mLatLongFromPreviousPick;
     private Marker mPreviouslySelectedMarker;
+    // Place lat and lng fetched from Firebase to a list variables
+    private List<Marker> mMarkersFromDb = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        // if user still didn't create the event, add a marker that was selected previously
         if  (mLatLongFromPreviousPick != null && mLatLongFromPreviousPick[0] != 0.0 &&
                 mLatLongFromPreviousPick[1] != 0.0) {
             LatLng previousPickedLocation = new LatLng(mLatLongFromPreviousPick[0],
@@ -105,18 +112,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mPreviouslySelectedMarker = mMap.addMarker(new MarkerOptions().position(previousPickedLocation).title("Marker Bitch"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(previousPickedLocation));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+
+            // Set bounds so that user cannot travel from approx lithuania borders
             mMap.setLatLngBoundsForCameraTarget(new LatLngBounds(
                     new LatLng(53.94322574436461, 21.04769211262464), // southeast
                     new LatLng(56.07548457909273, 26.81183036416769))); // northwest
         }
 
+        // Get existing locations from the Firebase Database
+        mLocationListener = mEventsDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.e("Count " ,"" + dataSnapshot.getChildrenCount());
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                    StreetEvent streetEvent = postSnapshot.getValue(StreetEvent.class);
+                    LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
+                    Marker markerFromDb = mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
+                            .snippet("Suck my dick"));
+
+                    mMarkersFromDb.add(markerFromDb);
+                    //Draw circles around existing locations fetched from Firebase
+                    Circle circle = mMap.addCircle(new CircleOptions()
+                            .center(latLngFromDatabase)
+                            .radius(20) //20 meters
+                            .strokeColor(Color.rgb(0, 136, 255))
+                            .fillColor(Color.argb(20, 0, 136, 255)));
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        // Add makers when map is clicked
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng point) {
                 latLng = point;
                 latitude = point.latitude;
                 longitude = point.longitude;
-
 
                 List<Address> addresses = new ArrayList<>();
                 try {
@@ -139,9 +176,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
 
-
-
-
                 //remove previously placed Marker
                 if (mMarker != null) {
                     mMarker.remove();
@@ -153,32 +187,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
 
-                //place marker where user just clicked
-                mMarker = mMap.addMarker(new MarkerOptions().position(point).title(mAdressStringBuilder.toString())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
-            }
-        });
+                boolean isEventToClose = false;
+                for (Marker marker: mMarkersFromDb){
 
-        mLocationListener = mEventsDatabaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e("Count " ,""+dataSnapshot.getChildrenCount());
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
-                    StreetEvent streetEvent = postSnapshot.getValue(StreetEvent.class);
-                    LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
-                    mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
-                            .snippet("Suck my dick"));
+                    if (SphericalUtil.computeDistanceBetween(point, marker.getPosition()) < 20){
+                        Toast.makeText(MapsActivity.this, "Too close bitch!", Toast.LENGTH_SHORT).show();
+                        isEventToClose = true;
+                        break;
+                    } else {
+                        isEventToClose = false;
 
+                    }
                 }
 
-            }
+                if (!isEventToClose){
+                    //Place marker. distance is more than 20 m.
+                    //place marker where user just clicked
+                    mMarker = mMap.addMarker(new MarkerOptions().position(point).title(mAdressStringBuilder.toString())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+                }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+
+
 
     }
 
@@ -192,5 +226,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.d("latitude is", String.valueOf(latitude));
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
+    }
+
+    // Checks if newly added marker is at least 20m distance from another.
+    // To make sure that musicians do not overpower each other
+    public double enoughDistanceBetweenMarkers(LatLng StartP, LatLng EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        double meter = valueResult % 1000;
+        int meterInDec = Integer.valueOf(newFormat.format(meter));
+        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
+                + " Meter   " + meterInDec);
+
+        return Radius * c;
     }
 }
