@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.Band;
 import com.example.vytuatus.streetlive.model.StreetEvent;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -81,7 +82,6 @@ public class ArtistProfileFragment extends Fragment {
     private OneArtistFirebaseAdapter mOneArtistFirebaseAdapter;
 
     private FloatingActionButton mCreateEventFabButton;
-    private FloatingActionButton mCreateNewBandFabButton;
     private TextView mBandNameTextView;
     private TextView mGenreTextView;
     private TextView mBandDescriptionTextView;
@@ -131,7 +131,6 @@ public class ArtistProfileFragment extends Fragment {
         mBandDescriptionTextView = rootView.findViewById(R.id.bandDescription_textView);
         mImageView = rootView.findViewById(R.id.band_imageView);
         mCreateEventFabButton = rootView.findViewById(R.id.create_event_fab_button);
-        mCreateNewBandFabButton = rootView.findViewById(R.id.create_band_fab_button);
 
         // Load recycler view for band events
         loadEventsRecyclerView(rootView);
@@ -152,19 +151,13 @@ public class ArtistProfileFragment extends Fragment {
                 intent.putExtra(PASS_BAND_DESCRIPTION_INTENT_KEY, mBandDescription);
                 startActivity(intent);
 
-            }
-        });
+                // Reset any previously user selected, but not saved locations in MapsActivity
+                Utility.saveSelectedLatLngToSharedPrefs(getActivity(), new double[]{0, 0});
 
-        mCreateNewBandFabButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), CreateBand.class);
-                startActivity(intent);
             }
         });
 
         return rootView;
-
 
     }
 
@@ -299,9 +292,8 @@ public class ArtistProfileFragment extends Fragment {
         userEventReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //onDataChange called so remove progress bar
+                //onDataChange called so we can show the fab buttons for creating events
                 mCreateEventFabButton.setVisibility(View.VISIBLE);
-                mCreateNewBandFabButton.setVisibility(View.VISIBLE);
                 Log.d(TAG, "RecyclerView loaded");
                 //make a call to dataSnapshot.hasChildren() and based
                 //on returned value show/hide empty view

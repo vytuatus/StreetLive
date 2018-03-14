@@ -13,6 +13,8 @@ public class StreetEvent {
     private String genre;
     private String description;
     private String photoUrl;
+    private String country;
+    private String city;
     private double lat;
     private double lng;
     private HashMap<String, Object> timestampCreated;
@@ -28,12 +30,15 @@ public class StreetEvent {
     }
 
     public StreetEvent(String bandName, String genre, String description,
-                       String photoUrl, double lat, double lng, HashMap<String, Object> timestampCreated) {
+                       String photoUrl, String country, String city, double lat, double lng,
+                       HashMap<String, Object> timestampCreated) {
 
         this.bandName = bandName;
         this.genre = genre;
         this.description = description;
         this.photoUrl = photoUrl;
+        this.country = country;
+        this.city = city;
         this.lat = lat;
         this.lng = lng;
         this.timestampCreated = timestampCreated;
@@ -46,6 +51,22 @@ public class StreetEvent {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getBandName() {

@@ -1,9 +1,14 @@
 package com.example.vytuatus.streetlive.Utils;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,6 +18,8 @@ import com.example.vytuatus.streetlive.CreateBand;
 import com.example.vytuatus.streetlive.MainActivity;
 import com.example.vytuatus.streetlive.R;
 import com.example.vytuatus.streetlive.model.Band;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,8 +42,8 @@ public class Utility {
     // Method that updates the shared pref variable which holds which fragment should be loaded when
     // user goes to check his bands
     public static void updateNumberOfBands(FirebaseUser firebaseUser,
-                                          DatabaseReference databaseReference,
-                                          final Context context) {
+                                           DatabaseReference databaseReference,
+                                           final Context context) {
         // Got to artist profile
         String userId = firebaseUser.getUid();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
@@ -49,16 +56,16 @@ public class Utility {
         bandDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()){
+                if (dataSnapshot.hasChildren()) {
                     StringBuilder sb = new StringBuilder();
 
                     // Iterate through all the bands user has and store them as string in Shared Prefs
-                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         sb.append(postSnapshot.getKey()).append(",");
                     }
                     editor.putString(context.getString(R.string.band_names_pref_key), sb.toString());
 
-                    if (context instanceof CreateBand){
+                    if (context instanceof CreateBand) {
                         Intent intent = new Intent(context, ArtistProfile.class);
                         context.startActivity(intent);
                     }
@@ -80,7 +87,7 @@ public class Utility {
     }
 
     // get the number of Bands from the shared Preferences
-    public static String[] getNumberOfBands(Context context){
+    public static String[] getNumberOfBands(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         String[] bandNames = sp.getString(context.getString(R.string.band_names_pref_key), "empty").
                 split(",");
@@ -88,7 +95,7 @@ public class Utility {
         return bandNames;
     }
 
-    public static void saveSelectedLatLngToSharedPrefs(Context context, double[] latLng){
+    public static void saveSelectedLatLngToSharedPrefs(Context context, double[] latLng) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sp.edit();
         editor.putLong(context.getString(R.string.latitude_pref_key), Double.doubleToLongBits(latLng[0]));
@@ -97,7 +104,7 @@ public class Utility {
 
     }
 
-    public static double[] getSelectedLatLngFromSharedPrefs(Context context){
+    public static double[] getSelectedLatLngFromSharedPrefs(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         double latitude = Double.longBitsToDouble(
                 sp.getLong(context.getString(R.string.latitude_pref_key),
@@ -109,5 +116,6 @@ public class Utility {
         return new double[]{latitude, longitude};
 
     }
+
 
 }

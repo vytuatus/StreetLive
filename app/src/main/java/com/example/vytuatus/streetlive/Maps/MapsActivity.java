@@ -43,8 +43,10 @@ import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    public static final String INTENT_KEY_RESULT_ADRESS = "resultAdress";
-    public static final String INTENT_KEY_LAT_LONG = "latLong";
+    public static final String INTENT_KEY_RESULT_ADRESS = "resultAddress";
+    public static final String INTENT_KEY_RESULT_LAT_LONG = "resultLatLong";
+    public static final String INTENT_KEY_RESULT_CITY_NAME = "resultCityName";
+    public static final String INTENT_KEY_RESULT_COUNTRY_NAME = "resultCountryName";
     public static final String TAG = MapsActivity.class.getSimpleName();
 
     private GoogleMap mMap;
@@ -57,6 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final String EVENTS_CHILD = "events";
     private DatabaseReference mEventsDatabaseReference;
 
+    private static final LatLng vilniusLatLng = new LatLng(54.68665982073372, 25.279131643474102);
     private double longitude;
     private double latitude;
     private LatLng latLng;
@@ -66,6 +69,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker mPreviouslySelectedMarker;
     // Place lat and lng fetched from Firebase to a list variables
     private List<Marker> mMarkersFromDb = new ArrayList<>();
+
+    // variables to hold selected events City and Country, so that Firebase Database can be structured
+    private String mSelectedEventLocCityName;
+    private String mSelectedEventLocCountryName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Get the previous location from shared preferences
         mLatLongFromPreviousPick = Utility.getSelectedLatLngFromSharedPrefs(this);
         Log.d(TAG, "" + mLatLongFromPreviousPick[0]);
+        Log.d(TAG, "" + mLatLongFromPreviousPick[1]);
 
         mapFragment.getMapAsync(this);
     }
@@ -111,13 +119,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             mPreviouslySelectedMarker = mMap.addMarker(new MarkerOptions().position(previousPickedLocation).title("Marker Bitch"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(previousPickedLocation));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
-            // Set bounds so that user cannot travel from approx lithuania borders
-            mMap.setLatLngBoundsForCameraTarget(new LatLngBounds(
-                    new LatLng(53.94322574436461, 21.04769211262464), // southeast
-                    new LatLng(56.07548457909273, 26.81183036416769))); // northwest
+        // otherwise more to the center of Vilnius
+        } else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(vilniusLatLng));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
+
+        // Set bounds so that user cannot travel from approx lithuania borders
+        mMap.setLatLngBoundsForCameraTarget(new LatLngBounds(
+                new LatLng(53.94322574436461, 21.04769211262464), // southeast
+                new LatLng(56.07548457909273, 26.81183036416769))); // northwest
+
 
         // Get existing locations from the Firebase Database
         mLocationListener = mEventsDatabaseReference.addValueEventListener(new ValueEventListener() {
@@ -147,7 +161,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        // Add makers when map is clicked
+        // Add markers when map is clicked
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng point) {
@@ -162,12 +176,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     e.printStackTrace();
                 }
 
-                // If you click a see location, there will be no adress
+
+                // If you click a sea location ex., there will be no address. account for that
                 if (addresses.size() > 0){
                     android.location.Address address = addresses.get(0);
+
+                    mSelectedEventLocCityName = address.getLocality();
+                    mSelectedEventLocCountryName = address.getCountryName();
+
                     if (address != null) {
                         mAdressStringBuilder = new StringBuilder();
-                        Log.d(TAG, "" + address);
+
                         for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                             mAdressStringBuilder.append(address.getAddressLine(i) + "\n");
                         }
@@ -187,11 +206,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
 
+                // Check if the picked location is too close to the already saved locations from database
                 boolean isEventToClose = false;
                 for (Marker marker: mMarkersFromDb){
-
+                    // If the event is too close to at least one event, show warning message
+                    // and break early from the for loop.
                     if (SphericalUtil.computeDistanceBetween(point, marker.getPosition()) < 20){
-                        Toast.makeText(MapsActivity.this, "Too close bitch!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapsActivity.this, "Your Event is too Close to Another one", Toast.LENGTH_SHORT).show();
                         isEventToClose = true;
                         break;
                     } else {
@@ -200,20 +221,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
 
-                if (!isEventToClose){
+                if (!isEventToClose) {
                     //Place marker. distance is more than 20 m.
                     //place marker where user just clicked
                     mMarker = mMap.addMarker(new MarkerOptions().position(point).title(mAdressStringBuilder.toString())
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
                 }
-
-
             }
+
         });
-
-
-
     }
 
     public void onLocationPicked (View v){
@@ -221,37 +238,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Return the selected latitudes and longitutes back to the CreateStreetEvent Activity
         double[] latLong = new double[]{latitude, longitude};
         Intent returnIntent = new Intent();
-        returnIntent.putExtra(INTENT_KEY_LAT_LONG, latLong);
+        returnIntent.putExtra(INTENT_KEY_RESULT_LAT_LONG, latLong);
         returnIntent.putExtra(INTENT_KEY_RESULT_ADRESS, mAdressStringBuilder.toString());
+        returnIntent.putExtra(INTENT_KEY_RESULT_CITY_NAME, mSelectedEventLocCityName);
+        returnIntent.putExtra(INTENT_KEY_RESULT_COUNTRY_NAME, mSelectedEventLocCountryName);
         Log.d("latitude is", String.valueOf(latitude));
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
     }
 
-    // Checks if newly added marker is at least 20m distance from another.
-    // To make sure that musicians do not overpower each other
-    public double enoughDistanceBetweenMarkers(LatLng StartP, LatLng EndP) {
-        int Radius = 6371;// radius of earth in Km
-        double lat1 = StartP.latitude;
-        double lat2 = EndP.latitude;
-        double lon1 = StartP.longitude;
-        double lon2 = EndP.longitude;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        double valueResult = Radius * c;
-        double km = valueResult / 1;
-        DecimalFormat newFormat = new DecimalFormat("####");
-        int kmInDec = Integer.valueOf(newFormat.format(km));
-        double meter = valueResult % 1000;
-        int meterInDec = Integer.valueOf(newFormat.format(meter));
-        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
-                + " Meter   " + meterInDec);
-
-        return Radius * c;
-    }
 }

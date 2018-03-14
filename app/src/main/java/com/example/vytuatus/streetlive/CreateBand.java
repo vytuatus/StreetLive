@@ -132,7 +132,6 @@ public class CreateBand extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 mBandName = editable.toString();
-                Toast.makeText(CreateBand.this, mBandName, Toast.LENGTH_SHORT).show();
             }
         });
 

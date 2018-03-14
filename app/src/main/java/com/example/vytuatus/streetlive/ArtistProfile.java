@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -77,7 +78,8 @@ public class ArtistProfile extends AppCompatActivity implements
                 mNoBandCreateLink.setVisibility(View.GONE);
                 //creating the sectionPagerAdapter which is responsible for controlling how pages are displayed and how many
                 SectionPagerAdapter adapter = new SectionPagerAdapter(getSupportFragmentManager());
-                mViewPager.setOffscreenPageLimit(2);
+                mViewPager.setOffscreenPageLimit(mBandNames.length);
+                Log.d(TAG, "" + mBandNames.length);
                 mViewPager.setAdapter(adapter);
                 mTabLayout.setupWithViewPager(mViewPager);
 
@@ -100,28 +102,18 @@ public class ArtistProfile extends AppCompatActivity implements
         @Override
         public Fragment getItem(int position) {
 
-            Fragment fragment = null;
-
-            //set fragment to different fragments depending on the position in ViewPager
             /**
              * Set fragment to different fragments depending on position in ViewPager
+             * Create as many fragments as user has bands.
              */
-            switch (position) {
-                case 0:
-                    ArtistProfileFragment fragment1 = ArtistProfileFragment.newInstance(mBandNames[0]);
-                    return fragment1;
-                case 1:
-                    ArtistProfileFragment fragment2 = ArtistProfileFragment.newInstance(mBandNames[1]);
-                    return fragment2;
-                default:
-                    return null;
-            }
+
+            return ArtistProfileFragment.newInstance(mBandNames[position]);
 
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return mBandNames.length;
         }
         /**
          * Set string resources as titles for each fragment by it's position
@@ -131,13 +123,7 @@ public class ArtistProfile extends AppCompatActivity implements
         @Override
         public CharSequence getPageTitle(int position) {
 
-            switch (position){
-                case 0:
-                    return mBandNames[0];
-                case 1:
-                default:
-                    return mBandNames[1];
-            }
+            return mBandNames[position];
         }
     }
 

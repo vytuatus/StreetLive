@@ -47,12 +47,15 @@ public class CreateStreetEvent extends AppCompatActivity {
     private TextView mDateHeadingTextView, mStartTimeTextView, mEndTimeTextView;
     private TextView mLatLngTextview;
     private Button mCreateEventButton;
+    private Button mSaveEvent;
     // Variables to store current date
     private int mYear, mMonth, mDay, mHour, mMinute;
     private String date_time;
 
     private double[] mLatLongFromMapAct;
     private String mResultAdress;
+    private String mResultCity;
+    private String mResultCountry;
 
 
     @Override
@@ -93,37 +96,6 @@ public class CreateStreetEvent extends AppCompatActivity {
         });
 
         //createEventInDatabase();
-    }
-
-    private void createEventInDatabase() {
-
-        DatabaseReference eventDatabaseReference = mFirebaseDatabaseReference.push();
-        final String eventReferenceId = eventDatabaseReference.getKey();
-
-        DatabaseReference eventReference = FirebaseDatabase.getInstance().
-                getReference(EVENTS_CHILD).child(eventReferenceId);
-        DatabaseReference userEventReference = FirebaseDatabase.getInstance().
-                getReference(USERS_CHILD).
-                child(mFirebaseUser.getUid()).
-                child(BAND_LIST).
-                child(mBandName).
-                child(EVENTS_IN_BAND).
-                child(eventReferenceId);
-
-        //make a hashmap to store the time when the event was added
-        HashMap<String, Object> timestampCreated = new HashMap<>();
-        timestampCreated.put(FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
-
-        StreetEvent streetEvent = new StreetEvent(
-                mBandName,
-                mBandGenre,
-                mBandDescription,
-                mBandNamePhotoUrl,
-                11.11,
-                12.12,
-                timestampCreated);
-        eventReference.setValue(streetEvent);
-        userEventReference.setValue(streetEvent);
     }
 
     private void showDatePickerDialog() {
@@ -178,12 +150,12 @@ public class CreateStreetEvent extends AppCompatActivity {
         switch (requestCode) {
             case 0:
                 if(resultCode == Activity.RESULT_OK){
-                    mLatLongFromMapAct = data.getDoubleArrayExtra(MapsActivity.INTENT_KEY_LAT_LONG);
+                    mLatLongFromMapAct = data.getDoubleArrayExtra(MapsActivity.INTENT_KEY_RESULT_LAT_LONG);
                     mResultAdress = data.getStringExtra(MapsActivity.INTENT_KEY_RESULT_ADRESS);
-                    Log.d("latitude is", String.valueOf(mLatLongFromMapAct[0]));
-                    Log.d("longitude is", String.valueOf(mLatLongFromMapAct[1]));
+                    mResultCity = data.getStringExtra(MapsActivity.INTENT_KEY_RESULT_CITY_NAME);
+                    mResultCountry = data.getStringExtra(MapsActivity.INTENT_KEY_RESULT_COUNTRY_NAME);
                     Utility.saveSelectedLatLngToSharedPrefs(this, mLatLongFromMapAct);
-                    mLatLngTextview.setText(mLatLongFromMapAct[0] + " " + mLatLongFromMapAct[1]);
+                    mLatLngTextview.setText(mResultAdress);
                 }
                 break;
 
@@ -193,6 +165,46 @@ public class CreateStreetEvent extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    // Save selected Event to the database
+    public void onEventSaveToDatabase (View v){
+        createEventInDatabase();
+        finish();
+    }
+
+    private void createEventInDatabase() {
+
+        DatabaseReference eventDatabaseReference = mFirebaseDatabaseReference.push();
+        final String eventReferenceId = eventDatabaseReference.getKey();
+
+        DatabaseReference eventReference = FirebaseDatabase.getInstance().
+                getReference(EVENTS_CHILD).
+                child(eventReferenceId);
+        DatabaseReference userEventReference = FirebaseDatabase.getInstance().
+                getReference(USERS_CHILD).
+                child(mFirebaseUser.getUid()).
+                child(BAND_LIST).
+                child(mBandName).
+                child(EVENTS_IN_BAND).
+                child(eventReferenceId);
+
+        //make a hashmap to store the time when the event was added
+        HashMap<String, Object> timestampCreated = new HashMap<>();
+        timestampCreated.put(FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+        StreetEvent streetEvent = new StreetEvent(
+                mBandName,
+                mBandGenre,
+                mBandDescription,
+                mBandNamePhotoUrl,
+                mResultCountry,
+                mResultCity,
+                mLatLongFromMapAct[0],
+                mLatLongFromMapAct[1],
+                timestampCreated);
+        eventReference.setValue(streetEvent);
+        userEventReference.setValue(streetEvent);
     }
 
     @Override

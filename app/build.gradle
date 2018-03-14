@@ -34,6 +34,9 @@ dependencies {
 
     // Google
     compile 'com.google.android.gms:play-services-auth:11.8.0'
+    compile 'com.google.android.gms:play-services-location:11.8.0'
+    compile 'com.google.android.gms:play-services-appinvite:11.8.0'
+    compile 'com.google.android.gms:play-services-ads:11.8.0'
 
     // Firebase
     compile 'com.google.firebase:firebase-analytics:11.8.0'
@@ -41,9 +44,7 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:11.8.0'
     compile 'com.google.firebase:firebase-auth:11.8.0'
     compile 'com.google.firebase:firebase-config:11.8.0'
-    compile 'com.google.android.gms:play-services-appinvite:11.8.0'
     compile 'com.google.firebase:firebase-messaging:11.8.0'
-    compile 'com.google.android.gms:play-services-ads:11.8.0'
     compile 'com.google.firebase:firebase-crash:11.8.0'
     compile 'com.google.firebase:firebase-appindexing:11.8.0'
 
