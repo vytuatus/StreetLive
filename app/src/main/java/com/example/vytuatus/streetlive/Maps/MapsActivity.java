@@ -142,7 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     StreetEvent streetEvent = postSnapshot.getValue(StreetEvent.class);
                     LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
                     Marker markerFromDb = mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
-                            .snippet("Suck my dick"));
+                            .snippet(streetEvent.getBandName()));
 
                     mMarkersFromDb.add(markerFromDb);
                     //Draw circles around existing locations fetched from Firebase

@@ -19,9 +19,37 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <LinearLayout
+        android:id="@+id/select_city_linearLayout"
+        android:layout_below="@+id/appBarLayout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="60dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/select_city_autoCompleteTextView"
+            android:layout_width="0dp"
+            android:layout_weight="7"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Select City" />
+
+        <Button
+            android:id="@+id/select_city_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="@string/confirm_selected_city_main_activity"/>
+
+    </LinearLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/messageRecyclerView"
-        android:layout_below="@+id/appBarLayout"
+        android:layout_below="@+id/select_city_linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

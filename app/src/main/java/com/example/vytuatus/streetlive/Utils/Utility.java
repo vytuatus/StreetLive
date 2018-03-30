@@ -26,7 +26,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static com.example.vytuatus.streetlive.MainActivity.BAND_LIST;
 import static com.example.vytuatus.streetlive.MainActivity.USERS_CHILD;
@@ -115,6 +119,39 @@ public class Utility {
 
         return new double[]{latitude, longitude};
 
+    }
+
+    // Convert local time to UTC
+    public static long localToGMT(long localTime) {
+        Date date = new Date(localTime);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date utc = new Date(sdf.format(date));
+        return utc.getTime();
+
+    }
+
+    // Covert UTC time to Local time
+    public static long gmttoLocalDate(long utcTime) {
+        Date date = new Date(utcTime);
+        String timeZone = Calendar.getInstance().getTimeZone().getID();
+        Date local = new Date(date.getTime() + TimeZone.getTimeZone(timeZone).getOffset(date.getTime()));
+        return local.getTime();
+    }
+
+    // get a friendly time string
+    public static String getFriendlyTime(long eventTime){
+        Date date = new Date(eventTime);
+        String friendlyDate = date.getHours() + ":" + date.getMinutes();
+        return friendlyDate;
+    }
+
+    // get a friendly time string
+    public static String getFriendlyDate(long eventTime){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(eventTime);
+        String friendlyDate = (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
+        return friendlyDate;
     }
 
 

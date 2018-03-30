@@ -31,6 +31,7 @@ public class StreetEvent {
 
     public StreetEvent(String bandName, String genre, String description,
                        String photoUrl, String country, String city, double lat, double lng,
+                       long startTime, long endTime,
                        HashMap<String, Object> timestampCreated) {
 
         this.bandName = bandName;
@@ -41,6 +42,8 @@ public class StreetEvent {
         this.city = city;
         this.lat = lat;
         this.lng = lng;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.timestampCreated = timestampCreated;
 
     }
@@ -119,6 +122,22 @@ public class StreetEvent {
 
     public HashMap<String, Object> getTimestampCreated() {
         return timestampCreated;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public void setTimestampCreated(HashMap<String, Object> timestampCreated) {

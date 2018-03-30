@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.StreetEvent;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -57,6 +58,13 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
         holder.bandNameTextView.setText(streetEvent.getBandName());
         holder.genreTextView.setText(streetEvent.getGenre());
 
+        // Set the event time
+        long eventStartTimeLocally = Utility.gmttoLocalDate(streetEvent.getStartTime());
+        long eventEndTimeLocally = Utility.gmttoLocalDate(streetEvent.getEndTime());
+        holder.eventStartTimeTextView.setText(Utility.getFriendlyTime(eventStartTimeLocally));
+        holder.eventEndTimeTextView.setText(Utility.getFriendlyTime(eventEndTimeLocally));
+        holder.eventDateTextView.setText(Utility.getFriendlyDate(eventEndTimeLocally));
+
         String bandImageUrl = streetEvent.getPhotoUrl();
             // If url starts with "gs" it means there is an image stored in Firebase for this band
             if (bandImageUrl.startsWith("gs://")){
@@ -99,6 +107,9 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
             View.OnClickListener {
         TextView bandNameTextView;
         TextView genreTextView;
+        TextView eventStartTimeTextView;
+        TextView eventEndTimeTextView;
+        TextView eventDateTextView;
         ImageView bandImageView;
         ImageView mapImageView;
 
@@ -106,6 +117,9 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
             super(v);
             bandNameTextView = itemView.findViewById(R.id.band_name_textView);
             genreTextView = itemView.findViewById(R.id.genre_textView);
+            eventStartTimeTextView = itemView.findViewById(R.id.event_start_time_textView);
+            eventEndTimeTextView = itemView.findViewById(R.id.event_end_time_textView);
+            eventDateTextView = itemView.findViewById(R.id.event_date_textView);
             bandImageView = itemView.findViewById(R.id.band_imageView);
             mapImageView = itemView.findViewById(R.id.map_imageView);
             mapImageView.setOnClickListener(this);

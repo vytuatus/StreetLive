@@ -1,10 +1,14 @@
 package com.example.vytuatus.streetlive;
 
 import android.*;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -12,16 +16,21 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -49,12 +58,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
         implements
         GoogleApiClient.OnConnectionFailedListener,
-        NavigationView.OnNavigationItemSelectedListener{
+        NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
     public static final String USERS_CHILD = "users";
@@ -72,7 +82,6 @@ public class MainActivity extends AppCompatActivity
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
     private GoogleApiClient mGoogleApiClient;
-    private FusedLocationProviderClient mFusedLocationClient;
     private Location mUsersLastKnownLocation;
     private static final String MESSAGE_URL = "http://friendlychat.firebase.google.com/message/";
 
@@ -83,6 +92,9 @@ public class MainActivity extends AppCompatActivity
     private EditText mMessageEditText;
     private ImageView mAddMessageImageView;
     private TextView mEmptyView;
+    private AutoCompleteTextView mSelectCityAutoCompleteTextView;
+    private Button mConfirmSelectedCityButton;
+    private String mCityName;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -108,6 +120,9 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // set up autocomplete for cities
+        setupAutoCompleteForCities();
+
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         // Set default username is anonymous.
         mUsername = ANONYMOUS;
@@ -116,7 +131,7 @@ public class MainActivity extends AppCompatActivity
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
-        if (mFirebaseUser == null){
+        if (mFirebaseUser == null) {
             // User is not signed in, we launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
@@ -124,7 +139,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             // User is signed in already
             mUsername = mFirebaseUser.getDisplayName();
-            if (mFirebaseUser.getPhotoUrl() != null){
+            if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
 
@@ -134,10 +149,6 @@ public class MainActivity extends AppCompatActivity
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
-
-        // Intialize location Client and get user's last known loaction
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        checkLocationPermission();
 
         // Initialize ProgressBar and RecyclerView.
         mProgressBar = findViewById(R.id.progressBar);
@@ -152,7 +163,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public StreetEvent parseSnapshot(DataSnapshot dataSnapshot) {
                 StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
-                if (streetEvent != null){
+                if (streetEvent != null) {
                     streetEvent.setId(dataSnapshot.getKey());
                 }
                 return streetEvent;
@@ -169,24 +180,23 @@ public class MainActivity extends AppCompatActivity
         // Recycler view objects
         mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
                 new CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler() {
-            @Override
-            public void onEventLocationClick(int position) {
-                mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
-                        double lat = streetEvent.getLat();
-                        double lng = streetEvent.getLng();
-                    }
+                    public void onEventLocationClick(int position) {
+                        mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
+                                double lat = streetEvent.getLat();
+                                double lng = streetEvent.getLng();
+                            }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
+                            }
+                        });
                     }
                 });
-            }
-        });
-
 
 
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -226,7 +236,7 @@ public class MainActivity extends AppCompatActivity
 
                 //make a call to dataSnapshot.hasChildren() and based
                 //on returned value show/hide empty view
-                if(!dataSnapshot.hasChildren()){
+                if (!dataSnapshot.hasChildren()) {
                     mEmptyView.setVisibility(View.VISIBLE);
                 } else {
                     mEmptyView.setVisibility(View.INVISIBLE);
@@ -242,6 +252,61 @@ public class MainActivity extends AppCompatActivity
 
         // Updates shared pref which holds info on which fragment should be loaded in ArtistProfile
         Utility.updateNumberOfBands(mFirebaseUser, mFirebaseDatabaseReference, MainActivity.this);
+
+    }
+
+    // Set's up the autocomplete dropdown for cities that user can select for filtering the events.
+    // Saves city in a global variable
+    private void setupAutoCompleteForCities() {
+
+        // This part handles autocomplete textView
+        final String[] citiesArray = getResources().getStringArray(R.array.cities);
+        ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line, citiesArray);
+        mSelectCityAutoCompleteTextView = findViewById(R.id.select_city_autoCompleteTextView);
+        mSelectCityAutoCompleteTextView.setAdapter(autocompletetextAdapter);
+        mSelectCityAutoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (hasFocus){
+                    mSelectCityAutoCompleteTextView.showDropDown();
+                }
+            }
+        });
+
+        mSelectCityAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mCityName = editable.toString();
+            }
+        });
+
+        // This part handles button clicks
+        mConfirmSelectedCityButton = findViewById(R.id.select_city_button);
+        mConfirmSelectedCityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // make sure that user selected the city
+                if (Arrays.asList(citiesArray).contains(mCityName)){
+                    // Fetch events from database with only this city
+                    Toast.makeText(MainActivity.this, "Filter based on city: " + mCityName,
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Have you selected the city?",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
 
@@ -279,7 +344,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
@@ -287,12 +352,17 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(this, SignInActivity.class));
                 finish();
                 return true;
-                // Create an example event
+            // Create an example event
             case R.id.create_event:
                 return false;
 
             case R.id.create_band:
                 return false;
+
+            case R.id.action_settings:
+                Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+                startActivity(startSettingsActivity);
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -334,88 +404,9 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    // Check for users permission to location. if not granted, ask for it.
-    private void checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed; request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                        1);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        } else {
-            // Permission has already been granted
-            mFusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            // Got last known location. In some rare situations this can be null.
-                            mUsersLastKnownLocation = location;
-                            if (location != null) {
-                                // Logic to handle location object
-                                mUsersLastKnownLocation = location;
-                            }
-                        }
-                    });
-        }
-    }
-
-    // Utility method checks the location permission. grant the permission
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                    mFusedLocationClient.getLastLocation()
-                            .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                                @Override
-                                public void onSuccess(Location location) {
-                                    // Got last known location. In some rare situations this can be null.
-                                    mUsersLastKnownLocation = location;
-                                    if (location != null) {
-                                        // Logic to handle location object
-                                        mUsersLastKnownLocation = location;
-                                    }
-                                }
-                            });
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request.
-        }
     }
 
 

@@ -65,6 +65,12 @@
 
     </FrameLayout>
 
+    <TextView
+        android:id="@+id/event_time_length_info_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"/>
+
     <Button
         android:id="@+id/button_select_location"
         android:text="Select Location"

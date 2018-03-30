@@ -11,4 +11,11 @@
         <item>Coffee-House</item>
         <item>Reggie</item>
     </string-array>
+
+    <string-array name="cities">
+        <item>Kaunas</item>
+        <item>Vilnius</item>
+        <item>Klaipeda</item>
+    </string-array>
 </resources>
+
