@@ -1,6 +1,7 @@
 package com.example.vytuatus.streetlive;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -36,6 +37,7 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
     public static interface CustomFirebaseAdapterOnClickHandler{
         void onEventLocationClick(int position);
     }
+
 
     public CustomFirebaseAdapter(FirebaseRecyclerOptions<StreetEvent> options, Context context,
                                  CustomFirebaseAdapterOnClickHandler clickHandler) {
@@ -131,4 +133,5 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
             mEventLocationClickHandler.onEventLocationClick(getAdapterPosition());
         }
     }
+
 }

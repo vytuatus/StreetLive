@@ -38,6 +38,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.util.Util;
 import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.Band;
 import com.example.vytuatus.streetlive.model.StreetEvent;
@@ -55,6 +56,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
@@ -64,7 +66,9 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity
         implements
         GoogleApiClient.OnConnectionFailedListener,
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener,
+        SharedPreferences.OnSharedPreferenceChangeListener
+{
 
     private static final String TAG = "MainActivity";
     public static final String USERS_CHILD = "users";
@@ -92,8 +96,7 @@ public class MainActivity extends AppCompatActivity
     private EditText mMessageEditText;
     private ImageView mAddMessageImageView;
     private TextView mEmptyView;
-    private AutoCompleteTextView mSelectCityAutoCompleteTextView;
-    private Button mConfirmSelectedCityButton;
+
     private String mCityName;
 
     // Firebase instance variables
@@ -101,7 +104,28 @@ public class MainActivity extends AppCompatActivity
     private FirebaseUser mFirebaseUser;
 
     private DatabaseReference mFirebaseDatabaseReference;
+    private SnapshotParser<StreetEvent> mParser;
     private CustomFirebaseAdapter mFirebaseAdapter;
+    private CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler mCustomFirebaseClickHandler =
+            new CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler() {
+        @Override
+        public void onEventLocationClick(final int position) {
+            mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
+                    double lat = streetEvent.getLat();
+                    double lng = streetEvent.getLng();
+                    Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,7 +183,7 @@ public class MainActivity extends AppCompatActivity
 
         // New Child Entries
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        SnapshotParser<StreetEvent> parser = new SnapshotParser<StreetEvent>() {
+        mParser = new SnapshotParser<StreetEvent>() {
             @Override
             public StreetEvent parseSnapshot(DataSnapshot dataSnapshot) {
                 StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
@@ -170,34 +194,18 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        DatabaseReference messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD);
+        // Get the stored previously selected city Name by user
+        mCityName = Utility.getSelectedCityNameFromSharedPrefs(this);
+        Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD);
         FirebaseRecyclerOptions<StreetEvent> options =
                 new FirebaseRecyclerOptions.Builder<StreetEvent>()
-                        .setQuery(messagesRef, parser)
+                        .setQuery(messagesRef, mParser)
                         .build();
 
         // Instantiate a new Firebase Adapter and also handle the click events on different
         // Recycler view objects
         mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
-                new CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler() {
-                    @Override
-                    public void onEventLocationClick(int position) {
-                        mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
-                                double lat = streetEvent.getLat();
-                                double lng = streetEvent.getLng();
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                });
-
+                mCustomFirebaseClickHandler);
 
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -225,6 +233,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+        Toast.makeText(this, "onCreatedLoadedAgain", Toast.LENGTH_SHORT).show();
 
         //add the listener for the single value event that will function
         //like a completion listener for initial data load of the FirebaseRecyclerAdapter
@@ -259,57 +268,7 @@ public class MainActivity extends AppCompatActivity
     // Saves city in a global variable
     private void setupAutoCompleteForCities() {
 
-        // This part handles autocomplete textView
-        final String[] citiesArray = getResources().getStringArray(R.array.cities);
-        ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line, citiesArray);
-        mSelectCityAutoCompleteTextView = findViewById(R.id.select_city_autoCompleteTextView);
-        mSelectCityAutoCompleteTextView.setAdapter(autocompletetextAdapter);
-        mSelectCityAutoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if (hasFocus){
-                    mSelectCityAutoCompleteTextView.showDropDown();
-                }
-            }
-        });
-
-        mSelectCityAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                mCityName = editable.toString();
-            }
-        });
-
-        // This part handles button clicks
-        mConfirmSelectedCityButton = findViewById(R.id.select_city_button);
-        mConfirmSelectedCityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // make sure that user selected the city
-                if (Arrays.asList(citiesArray).contains(mCityName)){
-                    // Fetch events from database with only this city
-                    Toast.makeText(MainActivity.this, "Filter based on city: " + mCityName,
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Have you selected the city?",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
     }
-
 
     @Override
     public void onStart() {
@@ -320,19 +279,25 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPause() {
-        mFirebaseAdapter.stopListening();
         super.onPause();
+        mFirebaseAdapter.stopListening();
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mFirebaseAdapter.startListening();
+        PreferenceManager.getDefaultSharedPreferences(this).
+                registerOnSharedPreferenceChangeListener(this);
+        Log.d(TAG, "OnResumeCalled");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).
+                unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -394,7 +359,11 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this, CreateBand.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_filter) {
+            // Go to Filter Page
+            // Create new band
+            Intent intent = new Intent(MainActivity.this, FilterEventsActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_manage) {
 
@@ -409,5 +378,54 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    //Used to re-query events from database based on Filters
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Toast.makeText(this, key, Toast.LENGTH_SHORT).show();
+        if (key.equals(getString(R.string.cityName_pref_key))){
+            mProgressBar.setVisibility(ProgressBar.VISIBLE);
 
+            Toast.makeText(this, "Pref has changed", Toast.LENGTH_SHORT).show();
+            // Get the stored previously selected city Name by user
+            mCityName = sharedPreferences.getString(key, "Vilnius");
+            Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").equalTo(mCityName);
+            FirebaseRecyclerOptions<StreetEvent> options =
+                    new FirebaseRecyclerOptions.Builder<StreetEvent>()
+                            .setQuery(messagesRef, mParser)
+                            .build();
+
+            mMessageRecyclerView.setAdapter(null);
+            // Instantiate a new Firebase Adapter and also handle the click events on different
+            // Recycler view objects
+            mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
+                    mCustomFirebaseClickHandler);
+
+            mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+
+            //add the listener for the single value event that will function
+            //like a completion listener for initial data load of the FirebaseRecyclerAdapter
+            messagesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    //onDataChange called so remove progress bar
+                    mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+
+                    //make a call to dataSnapshot.hasChildren() and based
+                    //on returned value show/hide empty view
+                    if (!dataSnapshot.hasChildren()) {
+                        mEmptyView.setVisibility(View.VISIBLE);
+                    } else {
+                        mEmptyView.setVisibility(View.INVISIBLE);
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+    }
 }

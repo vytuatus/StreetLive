@@ -121,6 +121,26 @@ public class Utility {
 
     }
 
+    /**
+     * Save selected cityName in MainActivity by user in Shared Prefs
+     * @param context
+     * @param cityName city name selected by user from autoCompTextView
+     */
+    public static void saveSelectedCityNameToSharedPrefs(Context context, String cityName) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(context.getString(R.string.cityName_pref_key), cityName);
+        editor.commit();
+    }
+
+    // get the previously selected city name from Shared prefs
+    public static String getSelectedCityNameFromSharedPrefs(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getString(context.getString(R.string.cityName_pref_key),
+                context.getString(R.string.cityName_pref_default));
+
+    }
+
     // Convert local time to UTC
     public static long localToGMT(long localTime) {
         Date date = new Date(localTime);
