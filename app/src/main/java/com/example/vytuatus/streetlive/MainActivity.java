@@ -196,7 +196,13 @@ public class MainActivity extends AppCompatActivity
 
         // Get the stored previously selected city Name by user
         mCityName = Utility.getSelectedCityNameFromSharedPrefs(this);
-        Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD);
+        Query messagesRef;
+        if (mCityName.length() > 0 && mCityName != null){
+            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").equalTo(mCityName);
+        } else {
+            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD);
+        }
+
         FirebaseRecyclerOptions<StreetEvent> options =
                 new FirebaseRecyclerOptions.Builder<StreetEvent>()
                         .setQuery(messagesRef, mParser)
