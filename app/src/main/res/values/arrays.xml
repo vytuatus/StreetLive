@@ -17,5 +17,12 @@
         <item>Vilnius</item>
         <item>Klaipeda</item>
     </string-array>
+
+    <string-array name="days">
+        <item>Today</item>
+        <item>Tomorrow</item>
+        <item>Day After Tomorrow</item>
+        <item>Weekend</item>
+    </string-array>
 </resources>
 

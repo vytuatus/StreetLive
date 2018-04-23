@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="City Filter"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
         android:gravity="center_horizontal"/>
     <LinearLayout
         android:layout_width="match_parent"
@@ -43,5 +44,34 @@
         android:layout_margin="8dp"
         android:gravity="left"
         android:text="City Selected: None" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorDivider"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="Day Filter"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+        android:gravity="center_horizontal"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/select_day_autoCompleteTextView"
+            android:layout_width="0dp"
+            android:layout_weight="7"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:hint="Select Day" />
+
+    </LinearLayout>
+
 
 </LinearLayout>

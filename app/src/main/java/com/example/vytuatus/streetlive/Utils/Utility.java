@@ -141,6 +141,18 @@ public class Utility {
 
     }
 
+    /**
+     * @param context
+     * @param daySelected is the selected day "today", "tomorrow" and ect in the filter
+     */
+    public static void saveSelectedDayFilterToSharedPrefs(Context context, String daySelected){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(context.getString(R.string.daySelected_pref_key), daySelected);
+        editor.commit();
+
+    }
+
     // Convert local time to UTC
     public static long localToGMT(long localTime) {
         Date date = new Date(localTime);
@@ -159,10 +171,67 @@ public class Utility {
         return local.getTime();
     }
 
+    // Get the time interval for a selected day in Filter in UTC
+    public static long[] getSelectedDayFilterInterval(String daySelected){
+
+        long startTime;
+        long endTime;
+        long[] timeInterval;
+        Calendar cal = Calendar.getInstance();
+        Log.d(TAG, "Local timezone " + cal.getTimeInMillis());
+
+        if (daySelected.equals("Today")){
+
+            // get the start time of today by setting the local time to 00:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 0); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the today's date start time in UTC
+            startTime = localToGMT(cal.getTimeInMillis());
+            Log.d(TAG, "start: " + getFriendlyTime(startTime));
+
+            // get the end time of today by setting the local time to 24:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the today's date end time in UTC
+            endTime = localToGMT(cal.getTimeInMillis());
+            Log.d(TAG, "start: " + getFriendlyTime(endTime));
+
+        } else if (daySelected.equals("Tomorrow")){
+
+            // add one day to get the tomorrow's day
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+            // get the start time of tomorrow by setting the local time to 00:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 0); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the tomorrow's date start time in UTC
+            startTime = localToGMT(cal.getTimeInMillis());
+            Log.d(TAG, "start: " + getFriendlyTime(startTime));
+
+            // get the end time of tomorrow by setting the local time to 24:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the tomorrow's date end time in UTC
+            endTime = localToGMT(cal.getTimeInMillis());
+            Log.d(TAG, "start: " + getFriendlyTime(endTime));
+
+        } else if (daySelected.equals("Day After Tomorrow")){
+
+
+        } else {
+            //else Weekend
+        }
+
+        return null;
+    }
+
     // get a friendly time string
     public static String getFriendlyTime(long eventTime){
         Date date = new Date(eventTime);
-        String friendlyDate = date.getHours() + ":" + date.getMinutes();
+        String friendlyDate = date.getDate()+ ":" + date.getHours() + ":" + date.getMinutes();
         return friendlyDate;
     }
 

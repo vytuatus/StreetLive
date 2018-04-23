@@ -100,6 +100,7 @@
     <string name="confirm_selected_city_main_activity">Confirm</string>
     <string name="cityName_pref_key">cityName_pref_key</string>
     <string name="cityName_pref_default">Vilnius</string>
+    <string name="daySelected_pref_key">daySelected_pref_key</string>
 
 
 </resources>

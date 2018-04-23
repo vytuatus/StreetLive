@@ -61,6 +61,7 @@ import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
@@ -388,6 +389,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Toast.makeText(this, key, Toast.LENGTH_SHORT).show();
+
+
         if (key.equals(getString(R.string.cityName_pref_key))){
             mProgressBar.setVisibility(ProgressBar.VISIBLE);
 
@@ -432,6 +435,10 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
+
+        } else if (key.equals(getString(R.string.daySelected_pref_key))) {
+
+            Utility.getSelectedDayFilterInterval(sharedPreferences.getString(key, "Today"));
         }
     }
 }

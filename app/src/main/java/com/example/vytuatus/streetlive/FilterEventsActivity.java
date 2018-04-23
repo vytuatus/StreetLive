@@ -7,9 +7,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,8 @@ public class FilterEventsActivity extends AppCompatActivity {
     private AutoCompleteTextView mSelectCityAutoCompleteTextView;
     private TextView mSelectedCityTextView;
     private Button mConfirmSelectedCityButton;
+    private Spinner mSelectDaySpinner;
+
     private String mCityName;
 
     @Override
@@ -36,6 +40,42 @@ public class FilterEventsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter_events);
 
+        initiateCitiesFilter();
+        initiateDaysfilter();
+
+
+    }
+
+    // Initiates the days filter. find views by Id and implements their functionality
+    private void initiateDaysfilter() {
+        // This part handles autocomplete textView
+        final String[] daysArray = getResources().getStringArray(R.array.days);
+        ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line, daysArray);
+        mSelectDaySpinner = findViewById(R.id.select_day_autoCompleteTextView);
+        mSelectDaySpinner.setAdapter(autocompletetextAdapter);
+
+        mSelectDaySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(FilterEventsActivity.this, adapterView.getSelectedItem().toString(),
+                        Toast.LENGTH_SHORT).show();
+                // Save the selected day in the sharedPrefs
+                Utility.saveSelectedDayFilterToSharedPrefs(FilterEventsActivity.this,
+                        adapterView.getSelectedItem().toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+    }
+
+    // Initiates the cities filter. find views by Id and implements their functionality
+    private void initiateCitiesFilter() {
         // This part handles autocomplete textView
         final String[] citiesArray = getResources().getStringArray(R.array.cities);
         ArrayAdapter<String> autocompletetextAdapter = new ArrayAdapter<>(
@@ -44,14 +84,14 @@ public class FilterEventsActivity extends AppCompatActivity {
         mSelectCityAutoCompleteTextView = findViewById(R.id.select_city_autoCompleteTextView);
         mSelectedCityTextView = findViewById(R.id.selected_city_TextView);
         mSelectCityAutoCompleteTextView.setAdapter(autocompletetextAdapter);
-        mSelectCityAutoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if (hasFocus){
-                    mSelectCityAutoCompleteTextView.showDropDown();
-                }
-            }
-        });
+//        mSelectCityAutoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View view, boolean hasFocus) {
+//                if (hasFocus){
+//                    mSelectCityAutoCompleteTextView.showDropDown();
+//                }
+//            }
+//        });
 
         mSelectCityAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -90,7 +130,6 @@ public class FilterEventsActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
 }
