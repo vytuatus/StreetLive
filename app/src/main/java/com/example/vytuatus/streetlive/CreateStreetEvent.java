@@ -252,6 +252,7 @@ public class CreateStreetEvent extends AppCompatActivity {
 
         DatabaseReference eventReference = FirebaseDatabase.getInstance().
                 getReference(EVENTS_CHILD).
+                child(mResultCity).
                 child(eventReferenceId);
         DatabaseReference userEventReference = FirebaseDatabase.getInstance().
                 getReference(USERS_CHILD).

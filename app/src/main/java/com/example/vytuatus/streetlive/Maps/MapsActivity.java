@@ -139,18 +139,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.e("Count " ,"" + dataSnapshot.getChildrenCount());
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
-                    StreetEvent streetEvent = postSnapshot.getValue(StreetEvent.class);
-                    LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
-                    Marker markerFromDb = mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
-                            .snippet(streetEvent.getBandName()));
+                    for (DataSnapshot eventSnapshot: postSnapshot.getChildren()){
+                        StreetEvent streetEvent = eventSnapshot.getValue(StreetEvent.class);
+                        LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
+                        Marker markerFromDb = mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
+                                .snippet(streetEvent.getBandName()));
 
-                    mMarkersFromDb.add(markerFromDb);
-                    //Draw circles around existing locations fetched from Firebase
-                    Circle circle = mMap.addCircle(new CircleOptions()
-                            .center(latLngFromDatabase)
-                            .radius(20) //20 meters
-                            .strokeColor(Color.rgb(0, 136, 255))
-                            .fillColor(Color.argb(20, 0, 136, 255)));
+                        mMarkersFromDb.add(markerFromDb);
+                        //Draw circles around existing locations fetched from Firebase
+                        Circle circle = mMap.addCircle(new CircleOptions()
+                                .center(latLngFromDatabase)
+                                .radius(20) //20 meters
+                                .strokeColor(Color.rgb(0, 136, 255))
+                                .fillColor(Color.argb(20, 0, 136, 255)));
+                    }
+
                 }
 
             }

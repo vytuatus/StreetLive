@@ -199,9 +199,10 @@ public class MainActivity extends AppCompatActivity
         mCityName = Utility.getSelectedCityNameFromSharedPrefs(this);
         Query messagesRef;
         if (mCityName.length() > 0 && mCityName != null){
-            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").equalTo(mCityName);
+            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).child(mCityName);
+            Log.d(TAG, "City is: " + mCityName);
         } else {
-            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD);
+            messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).child("Vilnius");
         }
 
         FirebaseRecyclerOptions<StreetEvent> options =
@@ -393,11 +394,19 @@ public class MainActivity extends AppCompatActivity
         Toast.makeText(this, "Pref has changed. key is: " + key, Toast.LENGTH_SHORT).show();
 
         // Get the stored previously selected city Name by user
-        mCityName = sharedPreferences.getString(key, "Vilnius");
-        long timeInterval[] = Utility.getSelectedDayFilterInterval(sharedPreferences.getString(key, "Today"));
+        if (key.equals(getString(R.string.cityName_pref_key))) {
+            mCityName = sharedPreferences.getString(key, "Vilnius");
+        }
+        long timeInterval[] = new long[2];
+        if (key.equals(getString(R.string.daySelected_pref_key))) {
+            timeInterval = Utility.getSelectedDayFilterInterval(sharedPreferences.getString(key, "Today"));
+        }
+        // Construct a query that will filter out city and time1
+        Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).child(mCityName)
+                .orderByChild("startTime").startAt(timeInterval[0]).endAt(timeInterval[1]);
+        Log.d(TAG, "startTime: " + timeInterval[0]);
+        Log.d(TAG, "endTime: " + timeInterval[1]);
 
-        Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").
-                equalTo(mCityName);
         FirebaseRecyclerOptions<StreetEvent> options =
                 new FirebaseRecyclerOptions.Builder<StreetEvent>()
                         .setQuery(messagesRef, mParser)

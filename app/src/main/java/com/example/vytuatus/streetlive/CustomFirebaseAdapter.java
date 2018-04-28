@@ -134,4 +134,6 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
         }
     }
 
+
+
 }
