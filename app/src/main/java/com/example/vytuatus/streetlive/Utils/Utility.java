@@ -171,12 +171,16 @@ public class Utility {
         return local.getTime();
     }
 
-    // Get the time interval for a selected day in Filter in UTC
+    /**
+     * Get the time interval for a selected day in Filter in UTC
+     * @param daySelected in the filter
+     * @return time interval of selected day/period in UTC time from 00:00 to 24:00
+     */
     public static long[] getSelectedDayFilterInterval(String daySelected){
 
         long startTime;
         long endTime;
-        long[] timeInterval;
+        long[] timeInterval = new long[2];
         Calendar cal = Calendar.getInstance();
         Log.d(TAG, "Local timezone " + cal.getTimeInMillis());
 
@@ -188,7 +192,6 @@ public class Utility {
             cal.set(Calendar.SECOND, 0); //set seconds to zero
             // Get the today's date start time in UTC
             startTime = localToGMT(cal.getTimeInMillis());
-            Log.d(TAG, "start: " + getFriendlyTime(startTime));
 
             // get the end time of today by setting the local time to 24:00 o'clock
             cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
@@ -196,7 +199,6 @@ public class Utility {
             cal.set(Calendar.SECOND, 0); //set seconds to zero
             // Get the today's date end time in UTC
             endTime = localToGMT(cal.getTimeInMillis());
-            Log.d(TAG, "start: " + getFriendlyTime(endTime));
 
         } else if (daySelected.equals("Tomorrow")){
 
@@ -208,7 +210,6 @@ public class Utility {
             cal.set(Calendar.SECOND, 0); //set seconds to zero
             // Get the tomorrow's date start time in UTC
             startTime = localToGMT(cal.getTimeInMillis());
-            Log.d(TAG, "start: " + getFriendlyTime(startTime));
 
             // get the end time of tomorrow by setting the local time to 24:00 o'clock
             cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
@@ -216,16 +217,48 @@ public class Utility {
             cal.set(Calendar.SECOND, 0); //set seconds to zero
             // Get the tomorrow's date end time in UTC
             endTime = localToGMT(cal.getTimeInMillis());
-            Log.d(TAG, "start: " + getFriendlyTime(endTime));
 
         } else if (daySelected.equals("Day After Tomorrow")){
+            // add two days to get the day after tomorrow's day
+            cal.add(Calendar.DAY_OF_YEAR, 2);
+            // get the start time of tomorrow by setting the local time to 00:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 0); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the tomorrow's date start time in UTC
+            startTime = localToGMT(cal.getTimeInMillis());
 
+            // get the end time of tomorrow by setting the local time to 24:00 o'clock
+            cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the tomorrow's date end time in UTC
+            endTime = localToGMT(cal.getTimeInMillis());
 
         } else {
             //else Weekend
+
+            // Set the calendar to Saturday to get start date
+            cal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+            cal.set(Calendar.HOUR_OF_DAY, 0); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+
+            // Get the weekends start time in UTC
+            startTime = localToGMT(cal.getTimeInMillis());
+
+            // add 1 day, so we get Sunday and also set the the local time to 24:00 o'clock to get End of Sunday
+            cal.add(Calendar.DAY_OF_YEAR, 1);;
+            cal.set(Calendar.HOUR_OF_DAY, 24); //set hours to zero
+            cal.set(Calendar.MINUTE, 0); // set minutes to zero
+            cal.set(Calendar.SECOND, 0); //set seconds to zero
+            // Get the tomorrow's date end time in UTC
+            endTime = localToGMT(cal.getTimeInMillis());
         }
 
-        return null;
+        timeInterval[0] = startTime;
+        timeInterval[1] = endTime;
+        return timeInterval;
     }
 
     // get a friendly time string

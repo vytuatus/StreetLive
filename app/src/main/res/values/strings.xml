@@ -102,5 +102,7 @@
     <string name="cityName_pref_default">Vilnius</string>
     <string name="daySelected_pref_key">daySelected_pref_key</string>
 
+    <string name="content_authority">com.example.vytuatus.streetlive</string>
+
 
 </resources>

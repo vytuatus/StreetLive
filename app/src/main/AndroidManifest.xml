@@ -19,7 +19,6 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,6 +26,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".data.StreetLiveProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false" />
+
         <activity android:name=".CreateStreetEvent" />
         <activity android:name=".SignInActivity" />
         <activity android:name=".ArtistProfile" />

@@ -388,57 +388,52 @@ public class MainActivity extends AppCompatActivity
     //Used to re-query events from database based on Filters
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Toast.makeText(this, key, Toast.LENGTH_SHORT).show();
 
+        mProgressBar.setVisibility(ProgressBar.VISIBLE);
+        Toast.makeText(this, "Pref has changed. key is: " + key, Toast.LENGTH_SHORT).show();
 
-        if (key.equals(getString(R.string.cityName_pref_key))){
-            mProgressBar.setVisibility(ProgressBar.VISIBLE);
+        // Get the stored previously selected city Name by user
+        mCityName = sharedPreferences.getString(key, "Vilnius");
+        long timeInterval[] = Utility.getSelectedDayFilterInterval(sharedPreferences.getString(key, "Today"));
 
-            Toast.makeText(this, "Pref has changed", Toast.LENGTH_SHORT).show();
-            // Get the stored previously selected city Name by user
-            mCityName = sharedPreferences.getString(key, "Vilnius");
-            Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").equalTo(mCityName);
-            FirebaseRecyclerOptions<StreetEvent> options =
-                    new FirebaseRecyclerOptions.Builder<StreetEvent>()
-                            .setQuery(messagesRef, mParser)
-                            .build();
+        Query messagesRef = mFirebaseDatabaseReference.child(EVENTS_CHILD).orderByChild("city").
+                equalTo(mCityName);
+        FirebaseRecyclerOptions<StreetEvent> options =
+                new FirebaseRecyclerOptions.Builder<StreetEvent>()
+                        .setQuery(messagesRef, mParser)
+                        .build();
 
-            mMessageRecyclerView.setAdapter(null);
-            // Instantiate a new Firebase Adapter and also handle the click events on different
-            // Recycler view objects
-            mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
-                    mCustomFirebaseClickHandler);
+        mMessageRecyclerView.setAdapter(null);
+        // Instantiate a new Firebase Adapter and also handle the click events on different
+        // Recycler view objects
+        mFirebaseAdapter = new CustomFirebaseAdapter(options, MainActivity.this,
+                mCustomFirebaseClickHandler);
 
-            mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
 
-            //add the listener for the single value event that will function
-            //like a completion listener for initial data load of the FirebaseRecyclerAdapter
-            messagesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    //onDataChange called so remove progress bar
-                    mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+        //add the listener for the single value event that will function
+        //like a completion listener for initial data load of the FirebaseRecyclerAdapter
+        messagesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //onDataChange called so remove progress bar
+                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
-                    //make a call to dataSnapshot.hasChildren() and based
-                    //on returned value show/hide empty view
-                    if (!dataSnapshot.hasChildren()) {
-                        mEmptyView.setVisibility(View.VISIBLE);
-                    } else {
-                        mEmptyView.setVisibility(View.INVISIBLE);
-                    }
-
+                //make a call to dataSnapshot.hasChildren() and based
+                //on returned value show/hide empty view
+                if (!dataSnapshot.hasChildren()) {
+                    mEmptyView.setVisibility(View.VISIBLE);
+                } else {
+                    mEmptyView.setVisibility(View.INVISIBLE);
                 }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+            }
 
-                }
-            });
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
 
-        } else if (key.equals(getString(R.string.daySelected_pref_key))) {
-
-            Utility.getSelectedDayFilterInterval(sharedPreferences.getString(key, "Today"));
-        }
     }
 }
