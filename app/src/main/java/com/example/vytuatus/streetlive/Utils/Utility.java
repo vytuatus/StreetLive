@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +18,7 @@ import com.bumptech.glide.util.Util;
 import com.example.vytuatus.streetlive.ArtistProfile;
 import com.example.vytuatus.streetlive.CreateBand;
 import com.example.vytuatus.streetlive.MainActivity;
+import com.example.vytuatus.streetlive.Maps.MapsActivity;
 import com.example.vytuatus.streetlive.R;
 import com.example.vytuatus.streetlive.model.Band;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -26,10 +29,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import static com.example.vytuatus.streetlive.MainActivity.BAND_LIST;
@@ -264,7 +270,7 @@ public class Utility {
     // get a friendly time string
     public static String getFriendlyTime(long eventTime){
         Date date = new Date(eventTime);
-        String friendlyDate = date.getDate()+ ":" + date.getHours() + ":" + date.getMinutes();
+        String friendlyDate = date.getHours() + ":" + date.getMinutes();
         return friendlyDate;
     }
 
@@ -274,6 +280,41 @@ public class Utility {
         calendar.setTimeInMillis(eventTime);
         String friendlyDate = (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
         return friendlyDate;
+    }
+
+    /**
+     * @param context
+     * @param latitude events latitude
+     * @param longitude events longitude
+     * @return returns full event adress
+     */
+    public static String getAddressFromLatLng(Context context, double latitude, double longitude){
+
+        Geocoder mGeocoder;
+        StringBuilder addressStringBuilder = new StringBuilder();
+
+        mGeocoder = new Geocoder(context, Locale.getDefault());
+
+        List<Address> addresses = new ArrayList<>();
+        try {
+            addresses = mGeocoder.getFromLocation(latitude, longitude, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // If you click a sea location ex., there will be no address. account for that
+        if (addresses.size() > 0){
+            android.location.Address address = addresses.get(0);
+
+            if (address != null) {
+                for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                    addressStringBuilder.append(address.getAddressLine(i) + "\n");
+                }
+
+            }
+        }
+
+        return addressStringBuilder.toString();
     }
 
 

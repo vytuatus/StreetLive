@@ -35,7 +35,7 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
     private final String TAG = CustomFirebaseAdapter.class.getSimpleName();
     private final CustomFirebaseAdapterOnClickHandler mEventLocationClickHandler;
     public static interface CustomFirebaseAdapterOnClickHandler{
-        void onEventLocationClick(int position);
+        void onEventLocationClick(int position, String eventFirebaseId);
     }
 
 
@@ -124,13 +124,15 @@ public class CustomFirebaseAdapter extends FirebaseRecyclerAdapter<StreetEvent,
             eventDateTextView = itemView.findViewById(R.id.event_date_textView);
             bandImageView = itemView.findViewById(R.id.band_imageView);
             mapImageView = itemView.findViewById(R.id.map_imageView);
+            itemView.setOnClickListener(this);
             mapImageView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
             Toast.makeText(view.getContext(), "Map Clicked", Toast.LENGTH_SHORT).show();
-            mEventLocationClickHandler.onEventLocationClick(getAdapterPosition());
+                        mEventLocationClickHandler.onEventLocationClick(getAdapterPosition(),
+                                getItem(getAdapterPosition()).getId());
         }
     }
 

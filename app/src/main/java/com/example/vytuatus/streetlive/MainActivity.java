@@ -110,21 +110,11 @@ public class MainActivity extends AppCompatActivity
     private CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler mCustomFirebaseClickHandler =
             new CustomFirebaseAdapter.CustomFirebaseAdapterOnClickHandler() {
         @Override
-        public void onEventLocationClick(final int position) {
-            mFirebaseAdapter.getRef(position).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    StreetEvent streetEvent = dataSnapshot.getValue(StreetEvent.class);
-                    double lat = streetEvent.getLat();
-                    double lng = streetEvent.getLng();
-                    Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
+        public void onEventLocationClick(final int position, final String eventId) {
+            Log.d(TAG, "Firebase Event ID: " + eventId);
+            Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+            intent.putExtra(DetailsActivity.INTENT_KEY_EVENT_ID, eventId);
+            startActivity(intent);
         }
     };
 
