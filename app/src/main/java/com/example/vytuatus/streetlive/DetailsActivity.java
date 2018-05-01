@@ -1,5 +1,6 @@
 package com.example.vytuatus.streetlive;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -8,11 +9,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.vytuatus.streetlive.Maps.EventMapActivity;
 import com.example.vytuatus.streetlive.Utils.Utility;
 import com.example.vytuatus.streetlive.model.Band;
 import com.example.vytuatus.streetlive.model.StreetEvent;
@@ -53,6 +56,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView mAddressTextView;
     private TextView mStartTimeTextView;
     private TextView mEndTimeTextView;
+    private ImageView mMapView;
 
     private String mBandPhotoUrl;
     private long mStartTime;
@@ -86,10 +90,29 @@ public class DetailsActivity extends AppCompatActivity {
         mAddressTextView = findViewById(R.id.address_textView);
         mStartTimeTextView = findViewById(R.id.startTime_textView);
         mEndTimeTextView = findViewById(R.id.endTime_textView);
+        mMapView = findViewById(R.id.map_imageView);
+        mMapView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(DetailsActivity.this, EventMapActivity.class);
+                intent.putExtra(EventMapActivity.INTENT_KEY_EVENT_LAT, mEventLat);
+                intent.putExtra(EventMapActivity.INTENT_KEY_EVENT_LNG, mEventLng);
+
+                startActivity(intent);
+
+//                Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + mEventAddress);
+//                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+//                mapIntent.setPackage("com.google.android.apps.maps");
+//                if (mapIntent.resolveActivity(getPackageManager()) != null) {
+//                    startActivity(mapIntent);
+//                }
+
+            }
+        });
 
         // fetch band information from Firebase Database
         fetchEventInfoFromFirebase();
-
 
     }
 

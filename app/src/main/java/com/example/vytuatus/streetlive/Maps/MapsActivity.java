@@ -60,6 +60,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference mEventsDatabaseReference;
 
     private static final LatLng vilniusLatLng = new LatLng(54.68665982073372, 25.279131643474102);
+    private static final LatLng southEastLithuaniaBorder = new LatLng(53.94322574436461, 21.04769211262464); // southeast
+    private static final LatLng northWestLithuaniaBorder = new LatLng(56.07548457909273, 26.81183036416769); // northwest
+
     private double longitude;
     private double latitude;
     private LatLng latLng;
@@ -129,8 +132,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Set bounds so that user cannot travel from approx lithuania borders
         mMap.setLatLngBoundsForCameraTarget(new LatLngBounds(
-                new LatLng(53.94322574436461, 21.04769211262464), // southeast
-                new LatLng(56.07548457909273, 26.81183036416769))); // northwest
+                southEastLithuaniaBorder,
+                northWestLithuaniaBorder));
 
 
         // Get existing locations from the Firebase Database

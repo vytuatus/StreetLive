@@ -52,6 +52,9 @@
             android:name=".Maps.MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity
+            android:name=".Maps.EventMapActivity"
+            android:label="@string/title_activity_maps" />
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity">
