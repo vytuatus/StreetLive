@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.vytuatus.streetlive.R;
 import com.example.vytuatus.streetlive.model.StreetEvent;
@@ -40,7 +41,8 @@ public class EventMapActivity extends FragmentActivity implements OnMapReadyCall
 
     private GoogleMap mMap;
     Geocoder mGeocoder;
-
+    private Marker mPreviouslySelectedMarker;
+    private Circle mPreviousCircle;
 
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseAuth mFirebaseAuth;
@@ -109,20 +111,16 @@ public class EventMapActivity extends FragmentActivity implements OnMapReadyCall
                     for (DataSnapshot eventSnapshot: postSnapshot.getChildren()){
                         StreetEvent streetEvent = eventSnapshot.getValue(StreetEvent.class);
                         LatLng latLngFromDatabase = new LatLng(streetEvent.getLat(), streetEvent.getLng());
-                        Marker markerFromDb = mMap.addMarker(new MarkerOptions().position(latLngFromDatabase).title(streetEvent.getBandName())
-                                .snippet(streetEvent.getBandName()));
 
-                        mMarkersFromDb.add(markerFromDb);
-                        //Draw circles around existing locations fetched from Firebase
-                        Circle circle = mMap.addCircle(new CircleOptions()
-                                .center(latLngFromDatabase)
-                                .radius(20) //20 meters
-                                .strokeColor(Color.rgb(0, 136, 255))
-                                .fillColor(Color.argb(20, 0, 136, 255)));
+                        MarkerOptions markerOptions = new MarkerOptions().
+                                position(latLngFromDatabase).
+                                title(streetEvent.getBandName())
+                                .snippet(streetEvent.getGenre());
+
+                        mMap.addMarker(markerOptions).setTag(streetEvent);
+
                     }
-
                 }
-
             }
 
             @Override
@@ -131,6 +129,9 @@ public class EventMapActivity extends FragmentActivity implements OnMapReadyCall
             }
         });
 
+        //mMap.setOnInfoWindowClickListener(this);
+        mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(this));
 
     }
+
 }
