@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.vytuatus.streetlive.Utils.Utility;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -45,6 +47,7 @@ public class SignInActivity extends AppCompatActivity implements
     private EditText mEmailField;
     private EditText mPasswordField;
     private ProgressDialog mProgressDialog;
+    private TextView mContinueWoSignTextView;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -61,11 +64,13 @@ public class SignInActivity extends AppCompatActivity implements
         mEmailCreateAccountButton = (Button) findViewById(R.id.email_create_account_button);
         mEmailField = (EditText) findViewById(R.id.field_email);
         mPasswordField = (EditText) findViewById(R.id.field_password);
+        mContinueWoSignTextView = findViewById(R.id.continue_wo_sing_textView);
 
         // Set click listeners
         mGoogleSignInButton.setOnClickListener(this);
         mEmailSignInButton.setOnClickListener(this);
         mEmailCreateAccountButton.setOnClickListener(this);
+        mContinueWoSignTextView.setOnClickListener(this);
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -95,7 +100,23 @@ public class SignInActivity extends AppCompatActivity implements
             case R.id.email_create_account_button:
                 createEmailAccount(mEmailField.getText().toString(), mPasswordField.getText().toString());
                 break;
+            case R.id.continue_wo_sing_textView:
+                signInAsGuest();
+                break;
         }
+    }
+
+    // Just log use app without sign in
+    private void signInAsGuest() {
+
+        // Update the shared prefs to show that user is just a guest
+        Utility.saveUserSignInTypeInSharedPrefs(SignInActivity.this,
+                getString(R.string.signInType_pref_guest_user));
+
+        startActivity(new Intent(SignInActivity.this,
+                MainActivity.class));
+
+        finish();
     }
 
     /**
@@ -116,9 +137,15 @@ public class SignInActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()){
+
+                            // Update the shared prefs to show that user is an active user with user name and pass
+                            Utility.saveUserSignInTypeInSharedPrefs(SignInActivity.this,
+                                    getString(R.string.signInType_pref_active_user));
+
                             // Account Create successfully and also signed in
                             startActivity(new Intent(SignInActivity.this,
                                     MainActivity.class));
+
                             finish();
                         } else {
                             // Failed. Present user with info.
@@ -184,8 +211,14 @@ public class SignInActivity extends AppCompatActivity implements
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
+
+                            // Update the shared prefs to show that user is an active user with user name and pass
+                            Utility.saveUserSignInTypeInSharedPrefs(SignInActivity.this,
+                                    getString(R.string.signInType_pref_active_user));
+
                             startActivity(new Intent(SignInActivity.this,
                                     MainActivity.class));
+
                             finish();
                         }
 
@@ -212,9 +245,14 @@ public class SignInActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()){
+
+                            // Update the shared prefs to show that user is an active user with user name and pass
+                            Utility.saveUserSignInTypeInSharedPrefs(SignInActivity.this,
+                                    getString(R.string.signInType_pref_active_user));
                             // Sign in worked! go to MainActivity
                             startActivity(new Intent(SignInActivity.this,
                                     MainActivity.class));
+
                             finish();
                         } else {
                             // Failed. Present user with info.

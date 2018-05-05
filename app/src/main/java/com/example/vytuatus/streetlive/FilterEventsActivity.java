@@ -34,11 +34,15 @@ public class FilterEventsActivity extends AppCompatActivity {
     private Spinner mSelectDaySpinner;
 
     private String mCityName;
+    private String mSelectedDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter_events);
+
+        mSelectedDay = Utility.getSelectedDayFilterFromSharedPrefs(this);
+        mCityName = Utility.getSelectedCityNameFromSharedPrefs(this);
 
         initiateCitiesFilter();
         initiateDaysfilter();
@@ -55,6 +59,11 @@ public class FilterEventsActivity extends AppCompatActivity {
                 android.R.layout.simple_dropdown_item_1line, daysArray);
         mSelectDaySpinner = findViewById(R.id.select_day_autoCompleteTextView);
         mSelectDaySpinner.setAdapter(autocompletetextAdapter);
+        // Show previously selected day
+        if (!mSelectedDay.equals(getString(R.string.daySelected_pref_default))){
+            int spinnerPosition = autocompletetextAdapter.getPosition(mSelectedDay);
+            mSelectDaySpinner.setSelection(spinnerPosition);
+        }
 
         mSelectDaySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -84,14 +93,11 @@ public class FilterEventsActivity extends AppCompatActivity {
         mSelectCityAutoCompleteTextView = findViewById(R.id.select_city_autoCompleteTextView);
         mSelectedCityTextView = findViewById(R.id.selected_city_TextView);
         mSelectCityAutoCompleteTextView.setAdapter(autocompletetextAdapter);
-//        mSelectCityAutoCompleteTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View view, boolean hasFocus) {
-//                if (hasFocus){
-//                    mSelectCityAutoCompleteTextView.showDropDown();
-//                }
-//            }
-//        });
+        // show previously selected city
+        if (!mCityName.equals(getString(R.string.cityName_pref_default))){
+
+            mSelectedCityTextView.setText(mCityName);
+        }
 
         mSelectCityAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override

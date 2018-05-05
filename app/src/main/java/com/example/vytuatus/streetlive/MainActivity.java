@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ANONYMOUS = "anonymous";
     private static final String MESSAGE_SENT_EVENT = "message_sent";
     private String mUsername;
+    private String mUserType;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
     private GoogleApiClient mGoogleApiClient;
@@ -125,6 +126,21 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mUserType = Utility.getUserSignInTypeFromSharedPrefs(this);
+        // Set default username is anonymous.
+        mUsername = ANONYMOUS;
+
+        // Initialize Firebase Authentication
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build();
+
         DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar, R.string.navigation_drawer_open,
@@ -135,35 +151,31 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // set up autocomplete for cities
-        setupAutoCompleteForCities();
-
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        // Set default username is anonymous.
-        mUsername = ANONYMOUS;
-
-        // Initialize Firebase Authentication
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
         if (mFirebaseUser == null) {
-            // User is not signed in, we launch the Sign In activity
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-            return;
+            if (mUserType.equals(getString(R.string.signInType_pref_active_user))){
+                // If user is an active user, then we need to prompt him to log in screen
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
+                return;
+            } else if (mUserType.equals(getString(R.string.signInType_pref_guest_user))) {
+                // If user is just a guest, inflate guest navigation menu drawer
+                navigationView.inflateMenu(R.menu.activity_main_drawer_guest_user);
+
+            }
+
         } else {
-            // User is signed in already
+            // User sign in, meaning user is an active user
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
 
-        }
+            // Updates shared pref which holds info on which fragment should be loaded in ArtistProfile
+            Utility.updateNumberOfBands(mFirebaseUser, mFirebaseDatabaseReference, MainActivity.this);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .build();
+            // If user is active user, inflate active user navigation menu drawer
+            navigationView.inflateMenu(R.menu.activity_main_drawer);
+        }
 
         // Initialize ProgressBar and RecyclerView.
         mProgressBar = findViewById(R.id.progressBar);
@@ -173,7 +185,6 @@ public class MainActivity extends AppCompatActivity
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
 
         // New Child Entries
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mParser = new SnapshotParser<StreetEvent>() {
             @Override
             public StreetEvent parseSnapshot(DataSnapshot dataSnapshot) {
@@ -257,15 +268,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // Updates shared pref which holds info on which fragment should be loaded in ArtistProfile
-        Utility.updateNumberOfBands(mFirebaseUser, mFirebaseDatabaseReference, MainActivity.this);
-
-    }
-
-    // Set's up the autocomplete dropdown for cities that user can select for filtering the events.
-    // Saves city in a global variable
-    private void setupAutoCompleteForCities() {
-
     }
 
     @Override
@@ -308,19 +310,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.sign_out_menu:
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(this, SignInActivity.class));
-                finish();
-                return true;
-            // Create an example event
-            case R.id.create_event:
-                return false;
-
-            case R.id.create_band:
-                return false;
 
             case R.id.action_settings:
                 Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
@@ -343,36 +332,74 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        if (id == R.id.nav_artist) {
-            // Go to the Artist page
-            Intent intent = new Intent(MainActivity.this, ArtistProfile.class);
-            startActivity(intent);
+        // if user is active user, load active user's navigation view items
+        if (mUserType.equals(getString(R.string.signInType_pref_active_user))){
+            // Handle navigation view item clicks here.
+            int id = item.getItemId();
 
-        } else if (id == R.id.nav_create_band) {
+            if (id == R.id.nav_artist) {
+                // Go to the Artist page
+                Intent intent = new Intent(MainActivity.this, ArtistProfile.class);
+                startActivity(intent);
 
-            // Create new band
-            Intent intent = new Intent(MainActivity.this, CreateBand.class);
-            startActivity(intent);
+            } else if (id == R.id.nav_create_band) {
 
-        } else if (id == R.id.nav_filter) {
-            // Go to Filter Page
-            // Create new band
-            Intent intent = new Intent(MainActivity.this, FilterEventsActivity.class);
-            startActivity(intent);
+                // Create new band
+                Intent intent = new Intent(MainActivity.this, CreateBand.class);
+                startActivity(intent);
 
-        } else if (id == R.id.nav_manage) {
+            } else if (id == R.id.nav_filter) {
+                // Go to Filter Page
+                // Create new band
+                Intent intent = new Intent(MainActivity.this, FilterEventsActivity.class);
+                startActivity(intent);
 
-        } else if (id == R.id.nav_share) {
+            } else if (id == R.id.nav_sign_out) {
 
-        } else if (id == R.id.nav_send) {
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                mUsername = ANONYMOUS;
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
+            } else if (id == R.id.nav_share) {
 
+            } else if (id == R.id.nav_send) {
+
+            }
+
+        } else if (mUserType.equals(getString(R.string.signInType_pref_guest_user))){
+            // Handle navigation view item clicks here.
+            int id = item.getItemId();
+
+            if (id == R.id.nav_create_account) {
+                // Go to sign in page
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
+
+            } else if (id == R.id.nav_filter) {
+                // Go to Filter Page
+                // Create new band
+                Intent intent = new Intent(MainActivity.this, FilterEventsActivity.class);
+                startActivity(intent);
+
+            } else if (id == R.id.nav_sign_out) {
+
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                mUsername = ANONYMOUS;
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
+            } else if (id == R.id.nav_share) {
+
+            } else if (id == R.id.nav_send) {
+
+            }
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 

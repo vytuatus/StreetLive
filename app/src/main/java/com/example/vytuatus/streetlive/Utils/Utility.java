@@ -159,6 +159,34 @@ public class Utility {
 
     }
 
+    // get the previously selected city name from Shared prefs
+    public static String getSelectedDayFilterFromSharedPrefs(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getString(context.getString(R.string.daySelected_pref_key),
+                context.getString(R.string.daySelected_pref_default));
+
+    }
+
+    /**
+     * @param context
+     * @param signInType shows if user sign in as guest or as an active user
+     */
+    public static void saveUserSignInTypeInSharedPrefs(Context context, String signInType){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(context.getString(R.string.signInType_pref_key), signInType);
+        editor.commit();
+
+    }
+
+    // get the previously selected city name from Shared prefs
+    public static String getUserSignInTypeFromSharedPrefs(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getString(context.getString(R.string.signInType_pref_key),
+                context.getString(R.string.signInType_pref_guest_user));
+
+    }
+
     // Convert local time to UTC
     public static long localToGMT(long localTime) {
         Date date = new Date(localTime);
