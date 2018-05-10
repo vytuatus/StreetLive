@@ -6,10 +6,13 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -33,6 +36,7 @@ public class ArtistProfile extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_profile);
+        setupActionBar();
 
         // Get shared preferences and get the bandNames from there
         mBandNames = Utility.getNumberOfBands(this);
@@ -76,20 +80,38 @@ public class ArtistProfile extends AppCompatActivity implements
             case SHOW_MULTIPLE_ARTIST_FRAGMENT:
                 mNoBandInfoMessage.setVisibility(View.GONE);
                 mNoBandCreateLink.setVisibility(View.GONE);
+
                 //creating the sectionPagerAdapter which is responsible for controlling how pages are displayed and how many
                 SectionPagerAdapter adapter = new SectionPagerAdapter(getSupportFragmentManager());
                 mViewPager.setOffscreenPageLimit(mBandNames.length);
                 Log.d(TAG, "" + mBandNames.length);
+
                 mViewPager.setAdapter(adapter);
                 mTabLayout.setupWithViewPager(mViewPager);
-
-//                MultipleArtistProfile multipleArtistFragment = new MultipleArtistProfile();
-//                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-//                        multipleArtistFragment).commit();
                 break;
 
         }
 
+    }
+
+    /**
+     * Set up the {@link android.app.ActionBar}, if the API is available.
+     */
+    private void setupActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Show the Up button in the action bar.
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            NavUtils.navigateUpFromSameTask(this);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public class SectionPagerAdapter extends FragmentStatePagerAdapter {

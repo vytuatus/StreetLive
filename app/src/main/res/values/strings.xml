@@ -108,5 +108,11 @@
     <string name="signInType_pref_key">signInType_pref_key</string>
     <string name="signInType_pref_guest_user">guest_user</string>
     <string name="signInType_pref_active_user">active_user</string>
+    <string name="title_activity_filterEventsActivity">Filters</string>
+    <string name="title_activity_bands">My Bands</string>
+    <string name="title_activity_create_band">Create Band</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

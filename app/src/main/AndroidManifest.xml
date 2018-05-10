@@ -34,8 +34,23 @@
 
         <activity android:name=".CreateStreetEvent" />
         <activity android:name=".SignInActivity" />
-        <activity android:name=".ArtistProfile" />
-        <activity android:name=".CreateBand" />
+        <activity
+            android:name=".ArtistProfile"
+            android:label="@string/title_activity_bands"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity
+            android:name=".CreateBand"
+            android:label="@string/title_activity_create_band"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+            >
+        </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -62,8 +77,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity android:name=".FilterEventsActivity" />
-        <activity android:name=".DetailsActivity"></activity>
+        <activity
+            android:name=".FilterEventsActivity"
+            android:label="@string/title_activity_filterEventsActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+            >
+        </activity>
+        <activity android:name=".DetailsActivity" />
+        <activity android:name=".SelectEventTime"></activity>
     </application>
 
 </manifest>
