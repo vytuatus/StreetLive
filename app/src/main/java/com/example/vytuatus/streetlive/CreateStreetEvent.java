@@ -84,7 +84,7 @@ public class CreateStreetEvent extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // Show DatePicker and TimePicker Dialogs
-                showDatePickerDialog(mStartTimeTextView, false);
+                //showDatePickerDialog(mStartTimeTextView, false);
             }
         });
         mStartDateCalendarTime = Calendar.getInstance();
@@ -92,7 +92,8 @@ public class CreateStreetEvent extends AppCompatActivity {
         mEndTimeTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showDatePickerDialog(mEndTimeTextView, true);
+                //showDatePickerDialog(mEndTimeTextView, true);
+                startActivity(new Intent(CreateStreetEvent.this, SelectEventTime.class));
             }
         });
         mEndDateCalendarTime = Calendar.getInstance();
